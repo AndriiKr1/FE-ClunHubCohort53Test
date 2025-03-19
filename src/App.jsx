@@ -1,9 +1,10 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import WelcomePage from './components/WelcomePage/WelcomePage';
+import RegisterPage from './components/Registration/RegitegPage';
 
 // Заглушки для майбутніх компонентів
-const Register = () => <div>Register Page</div>;
+
 const Login = () => <div>Login Page</div>;
 const Dashboard = () => <div>Dashboard Page</div>;
 
@@ -12,7 +13,7 @@ function App() {
     <Router>
       <Routes>
         <Route path="/" element={<WelcomePage />} />
-        <Route path="/register" element={<Register />} />
+        <Route path="/register" element={<RegisterPage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="*" element={<Navigate to="/" replace />} />

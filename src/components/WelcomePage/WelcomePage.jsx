@@ -41,7 +41,7 @@ const WelcomePage = () => {
 
         {/* Footer Text */}
         <div className={styles.footerText}>
-          <p>Family Planner</p>
+          <p>f a m i l y p l a n n e r</p>
           </div>
       </div>
     </div>
