@@ -1,7 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import WelcomePage from './components/WelcomePage/WelcomePage';
-import RegisterPage from './components/Registration/RegiterPage';
+import RegisterPage from './components/Registration/RegisterPage';
 
 // Заглушки для майбутніх компонентів
 
