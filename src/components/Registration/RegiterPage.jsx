@@ -37,19 +37,19 @@ const RegisterPage = () => {
     const newErrors = {};
     
     if (!formData.username.trim()) {
-      newErrors.username = "Ім'я користувача обов'язкове";
+      newErrors.username = "Username is required";
     }
     
     if (!formData.email.trim()) {
-      newErrors.email = "Email обов'язковий";
+      newErrors.email = "Email is required";
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = "Введіть коректний email";
+      newErrors.email = "Please enter a valid email";
     }
     
     if (!formData.password.trim()) {
-      newErrors.password = "Пароль обов'язковий";
+      newErrors.password = "Password required";
     } else if (formData.password.length < 6) {
-      newErrors.password = "Пароль має бути не менше 6 символів";
+      newErrors.password = "Password must be at least 6 characters long";
     }
     
     setErrors(newErrors);
@@ -71,7 +71,7 @@ const RegisterPage = () => {
       navigate('/dashboard');
     } catch (error) {
       setErrors({
-        submit: error.message || 'Помилка при реєстрації. Спробуйте пізніше.'
+        submit: error.message || 'Error while logging in. Please try again later.'
       });
     } finally {
       setIsLoading(false);
