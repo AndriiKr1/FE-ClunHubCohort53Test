@@ -1,0 +1,139 @@
+@import url('https://fonts.googleapis.com/css2?family=Oleo+Script+Swash+Caps:wght@400;700&family=Inika:wght@400;700&display=swap');
+
+/* Main container styling */
+.welcomeContainer {
+  height: 100vh;
+  width: 100%;
+  background: linear-gradient(to bottom, #caf8ca, #00eaea);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+/* Content wrapper */
+.content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 90%;
+  max-width: 500px;
+  height: 100vh;
+  position: relative;
+  box-sizing: border-box;
+}
+
+/* Logo container */
+.logoContainer {
+  margin-top: 10%;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+/* Logo styling */
+.logo {
+  width: 280px;
+  height: auto;
+}
+
+/* Action buttons container */
+.actionsContainer {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 85%;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* General button styling */
+.actionButton {
+  border: none;
+  border-radius: 50px;
+  padding: 18px 20px;
+  font-size: 22px;
+  font-weight: 500;
+  letter-spacing: 3px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  width: 100%;
+  font-family: 'Oleo Script Swash Caps', cursive;
+  background-color: #ffffff;
+  color: #206C9D;
+}
+
+/* Button hover effects */
+.actionButton:hover {
+  background-color: #206C9D;
+  color: #ffffff;
+  transform: scale(1.05);
+}
+
+/* Footer text styling */
+.footerText {
+  position: absolute;
+  bottom: 5%;
+  width: 100%;
+  font-family: 'Inika', serif;
+  font-weight: 400;
+  font-size: 15px;
+  line-height: 22px;
+  letter-spacing: 10px;
+  text-align: center;
+  color: #645270;
+}
+
+/* Responsive design - Small mobile devices */
+@media (max-width: 480px) {
+  .logo {
+    width: 240px;
+  }
+  
+  .actionButton {
+    font-size: 16px;
+    padding: 14px 16px;
+  }
+  
+  .actionsContainer {
+    width: 90%;
+  }
+  
+  .footerText {
+    font-size: 14px;
+  }
+}
+
+/* Responsive design - Tablets */
+@media (min-width: 481px) and (max-width: 768px) {
+  .logo {
+    width: 280px;
+  }
+  
+  .actionButton {
+    padding: 16px 20px;
+  }
+  
+  .actionsContainer {
+    width: 80%;
+  }
+}
+
+/* Responsive design - Small desktops */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .logo {
+    width: 320px;
+  }
+  
+  .actionsContainer {
+    width: 70%;
+  }
+  
+  .actionButton {
+    font-size: 18px;
+  }
+}
