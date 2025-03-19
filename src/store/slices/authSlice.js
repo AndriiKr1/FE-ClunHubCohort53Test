@@ -7,8 +7,7 @@ export const registerUser = createAsyncThunk(
   "auth/register",
   async (userData, { rejectWithValue }) => {
     try {
-      // Для тестування без реального API закоментуйте наступний блок
-      // і розкоментуйте блок нижче
+     
 
       //const response = await axios.post(`${API_URL}/auth/register`, userData);
       //return response.data;
