@@ -7,23 +7,15 @@ export const registerUser = createAsyncThunk(
   "auth/signup",
   async (userData, { rejectWithValue }) => {
     try {
-     
-
-      const response = await axios.post(`${API_URL}/auth/signup`, userData);
+      const response = await axios.post(`${API_URL}/auth/signup`, {
+        name: userData.username,
+        email: userData.email,
+        password: userData.password
+      });
       return response.data;
-
-      /*await new Promise((resolve) => setTimeout(resolve, 1500)); // Симуляція затримки
-      return {
-        user: {
-          id: "user_" + Math.random().toString(36).slice(2, 11),
-          username: userData.username,
-          email: userData.email,
-        },
-        token: "test_token_" + Math.random().toString(36).slice(2, 11),
-      };*/
     } catch (error) {
       return rejectWithValue(
-        error.response?.data?.message || "Registration error"
+        error.response?.data || "Registration error"
       );
     }
   }
