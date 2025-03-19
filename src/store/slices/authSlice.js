@@ -29,7 +29,7 @@ export const registerUser = createAsyncThunk(
   }
 );
 
-// Асинхронний action для входу в систему
+
 export const loginUser = createAsyncThunk(
   "auth/login",
   async (userData, { rejectWithValue }) => {
