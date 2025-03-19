@@ -15,11 +15,11 @@ export const registerUser = createAsyncThunk(
       await new Promise((resolve) => setTimeout(resolve, 1500)); // Симуляція затримки
       return {
         user: {
-          id: "user_" + Math.random().toString(36).substr(2, 9),
+          id: "user_" + Math.random().toString(36).slice(2, 11),
           username: userData.username,
           email: userData.email,
         },
-        token: "test_token_" + Math.random().toString(36).substr(2, 9),
+        token: "test_token_" + Math.random().toString(36).slice(2, 11),
       };
     } catch (error) {
       return rejectWithValue(
