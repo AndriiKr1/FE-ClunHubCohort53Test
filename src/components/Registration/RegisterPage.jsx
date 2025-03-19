@@ -24,7 +24,7 @@ const RegisterPage = () => {
       [name]: value
     }));
     
-    // Очищення помилки при зміні значення
+    
     if (errors[name]) {
       setErrors(prev => ({
         ...prev,
@@ -66,7 +66,7 @@ const RegisterPage = () => {
     setIsLoading(true);
     
     try {
-      // Відправка даних на реєстрацію через Redux
+      
       await dispatch(registerUser(formData)).unwrap();
       navigate('/dashboard');
     } catch (error) {
@@ -87,7 +87,7 @@ const RegisterPage = () => {
         </div>
 
         {/* Registration form */}
-        <form className={styles.form} onSubmit={handleSubmit}>
+        <form className={styles.form} onSubmit={handleSubmit} noValidate>
           <div className={styles.inputGroup}>
             <input
               type="text"

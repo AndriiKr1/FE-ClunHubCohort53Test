@@ -1,18 +1,18 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 
-const API_URL = "http://localhost:3000/api";
+const API_URL = 'http://localhost:8080/api';
 
 export const registerUser = createAsyncThunk(
-  "auth/register",
+  "auth/signup",
   async (userData, { rejectWithValue }) => {
     try {
      
 
-      //const response = await axios.post(`${API_URL}/auth/register`, userData);
-      //return response.data;
+      const response = await axios.post(`${API_URL}/auth/signup`, userData);
+      return response.data;
 
-      await new Promise((resolve) => setTimeout(resolve, 1500)); // Симуляція затримки
+      /*await new Promise((resolve) => setTimeout(resolve, 1500)); // Симуляція затримки
       return {
         user: {
           id: "user_" + Math.random().toString(36).slice(2, 11),
@@ -20,10 +20,10 @@ export const registerUser = createAsyncThunk(
           email: userData.email,
         },
         token: "test_token_" + Math.random().toString(36).slice(2, 11),
-      };
+      };*/
     } catch (error) {
       return rejectWithValue(
-        error.response?.data?.message || "Помилка реєстрації"
+        error.response?.data?.message || "Registration error"
       );
     }
   }
@@ -37,7 +37,7 @@ export const loginUser = createAsyncThunk(
       const response = await axios.post(`${API_URL}/auth/login`, userData);
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response?.data?.message || "Помилка входу");
+      return rejectWithValue(error.response?.data?.message || "Login error");
     }
   }
 );
