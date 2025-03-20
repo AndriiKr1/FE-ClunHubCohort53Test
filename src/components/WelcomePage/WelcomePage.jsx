@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import styles from './WelcomePage.module.css';
-import clanHubLogo from '../../assets/images/Logo.png';
+import clanHubLogo from '../../assets/images/Logo2.png';
 
 const WelcomePage = () => {
   const navigate = useNavigate();
@@ -41,7 +41,7 @@ const WelcomePage = () => {
 
         {/* Footer Text */}
         <div className={styles.footerText}>
-          <p>f a m i l y p l a n n e r</p>
+          <p>family planner</p>
           </div>
       </div>
     </div>

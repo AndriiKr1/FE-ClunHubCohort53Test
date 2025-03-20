@@ -2,10 +2,10 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import WelcomePage from './components/WelcomePage/WelcomePage';
 import RegisterPage from './components/Registration/RegisterPage';
+import LoginPage from './components/Login/LoginPage';
 
 // Заглушки для майбутніх компонентів
 
-const Login = () => <div>Login Page</div>;
 const Dashboard = () => <div>Dashboard Page</div>;
 
 function App() {
@@ -14,7 +14,7 @@ function App() {
       <Routes>
         <Route path="/" element={<WelcomePage />} />
         <Route path="/register" element={<RegisterPage />} />
-        <Route path="/login" element={<Login />} />
+        <Route path="/login" element={<LoginPage />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

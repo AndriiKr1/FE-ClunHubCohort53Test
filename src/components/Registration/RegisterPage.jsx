@@ -3,17 +3,29 @@ import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { registerUser } from '../../store/slices/authSlice';
 import styles from './RegisterPage.module.css';
-import clanHubLogo from '../../assets/images/Logo.png';
+import clanHubLogo from '../../assets/images/Logo2.png';
+
+
 
 const RegisterPage = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
+
+  /*const avatarOptions = [
+    { id: 'avatar1', image: avatar1 },
+    { id: 'avatar2', image: avatar2 },
+    { id: 'avatar3', image: avatar3 },
+    { id: 'avatar4', image: avatar4 },
+  ];*/
   
   const [formData, setFormData] = useState({
     username: '',
+    //age: '',
+    //avatar: '',
     email: '',
     password: ''
   });
+
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
 
@@ -33,13 +45,37 @@ const RegisterPage = () => {
     }
   };
 
+ /* const handleAvatarSelect = (avatarId) => {
+    setFormData(prev => ({
+      ...prev,
+      avatar: avatarId
+    }));
+    
+    if (errors.avatar) {
+      setErrors(prev => ({
+        ...prev,
+        avatar: ''
+      }));
+    }
+  };
+*/
   const validateForm = () => {
     const newErrors = {};
     
     if (!formData.username.trim()) {
       newErrors.username = "Username is required";
     }
+    /*
+    if (!formData.age.trim()) {
+      newErrors.age = "Age is required";
+    } else if (isNaN(formData.age) || parseInt(formData.age) <= 0) {
+      newErrors.age = "Please enter a valid age";
+    }
     
+    if (!formData.avatar.trim()) {
+      newErrors.avatar = "Please choose an avatar";
+    } */
+
     if (!formData.email.trim()) {
       newErrors.email = "Email is required";
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
@@ -48,8 +84,8 @@ const RegisterPage = () => {
     
     if (!formData.password.trim()) {
       newErrors.password = "Password required";
-    } else if (formData.password.length > 8) {
-      newErrors.password = "Password must be at least 6 characters long";
+    } else if (formData.password.length < 8) {
+      newErrors.password = "Password must be at least 8 characters long";
     }
     
     setErrors(newErrors);
@@ -71,7 +107,7 @@ const RegisterPage = () => {
       navigate('/dashboard');
     } catch (error) {
       setErrors({
-        submit: error.message || 'Error while logging in. Please try again later.'
+        submit: error.message || 'Error while registering. Please try again later.'
       });
     } finally {
       setIsLoading(false);
@@ -100,6 +136,44 @@ const RegisterPage = () => {
             />
             {errors.username && <span className={styles.error}>{errors.username}</span>}
           </div>
+
+          {/* Age form 
+          <div className={styles.inputGroup}>
+            <input
+              type="number"
+              name="age"
+              value={formData.age}
+              onChange={handleChange}
+              placeholder="Age"
+              className={styles.input}
+              disabled={isLoading}
+              min="1"
+            />
+            {errors.age && <span className={styles.error}>{errors.age}</span>}
+          </div>
+          
+           Avatar selection 
+          <div className={styles.inputGroup}>
+            <div className={styles.avatarLabel}>Choose your avatar...</div>
+            <div className={styles.avatarGrid}>
+              {avatarOptions.map((avatar) => (
+                <div 
+                  key={avatar.id}
+                  className={`${styles.avatarItem} ${formData.avatar === avatar.id ? styles.selectedAvatar : ''}`}
+                  onClick={() => handleAvatarSelect(avatar.id)}
+                >
+                  <img 
+                    src={avatar.image} 
+                    alt={`Avatar ${avatar.id}`} 
+                    className={styles.avatarImage}
+                  />
+                </div>
+              ))}
+            </div>
+            {errors.avatar && <span className={styles.error}>{errors.avatar}</span>}
+          </div>
+          
+*/}
 
           <div className={styles.inputGroup}>
             <input
@@ -134,13 +208,13 @@ const RegisterPage = () => {
             className={styles.submitButton}
             disabled={isLoading}
           >
-            {isLoading ? 'Створення...' : 'Create Account'}
+            {isLoading ? 'Creation...' : 'Create Account'}
           </button>
         </form>
 
         {/* Footer Text */}
         <div className={styles.footerText}>
-          <p>f a m i l y p l a n n e r</p>
+          <p>family planner</p>
         </div>
       </div>
     </div>

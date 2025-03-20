@@ -4,7 +4,7 @@
 .welcomeContainer {
   display: flex;
   flex-direction: column;
-  justify-content: flex-start; 
+  justify-content: center; 
   align-items: center;
   width: 100%;
   min-height: 100vh;
@@ -79,13 +79,15 @@
 .footerText {
   width: 100%;
   font-family: 'Inika', serif;
-  font-size: 14px;
+  font-size: 15px;
   text-align: center;
   color: #645270;
-  margin-top: 5vh;
+  letter-spacing: 2px;
   padding: 10px 0;
+  position: absolute; 
+  bottom: 30px; 
+  left: 0; 
 }
-
 /* Small screens */
 @media (max-width: 480px) {
   .content {
