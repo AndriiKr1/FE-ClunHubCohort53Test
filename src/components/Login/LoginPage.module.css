@@ -51,7 +51,7 @@
     padding: 14px 18px;
     border-radius: 30px;
     border: none;
-    font-family: 'Oleo Script Swash Caps', serif;
+    font-family: 'Original Surfer', serif;
     font-size: 16px; 
     color: #777;
     background-color: white;
@@ -85,7 +85,7 @@
     color: #000000;
     font-size: 15px;
     text-decoration: none;
-    font-family: 'Oleo Script Swash Caps', serif;
+    font-family: 'Original Surfer', serif;
     font-style: italic;
     transition: color 0.3s ease;
   }
@@ -101,7 +101,7 @@
     text-align: center;
     cursor: pointer;
     transition: all 0.3s ease;
-    font-family: 'Oleo Script Swash Caps', cursive;
+    font-family: 'Original Surfer', cursive;
     margin-top: 16px; 
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
     width: 100%; 

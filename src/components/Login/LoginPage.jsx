@@ -70,12 +70,11 @@ const LoginPage = () => {
     }
   };
 
-  const handleForgotPassword = () => {
-    // eslint-disable-next-line no-undef
-    e.preventDefault();
-
-    console.log("Forgot password clicked");
+  const handleForgotPassword = (e) => {
+    e.preventDefault(); 
+    navigate("/forgot-password"); 
   };
+
 
   return (
     <div className={styles.loginContainer}>
