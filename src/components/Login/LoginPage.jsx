@@ -51,20 +51,34 @@ const LoginPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+  
     if (!validateForm()) {
       return;
     }
-
+  
     setIsLoading(true);
-
+  
     try {
       await dispatch(loginUser(formData)).unwrap();
       navigate("/dashboard");
-    } catch (error) {
-      setErrors({
-        submit: error.message || "Incorrect email or password. Try again.",
-      });
+    } catch (error) {     
+      if (error === "user_not_found") {
+        setErrors({
+          submit: "Email is not registered. Please check your email or create an account."
+        });
+      } else if (error === "invalid_credentials") {
+        setErrors({
+          submit: "Incorrect password. Please try again."
+        });
+      } else if (error.includes("server")) {
+        setErrors({
+          submit: "Server is temporarily unavailable. Please try again later."
+        });
+      } else {
+        setErrors({
+          submit: error.message || "Login failed. Please try again."
+        });
+      }
     } finally {
       setIsLoading(false);
     }
@@ -139,9 +153,7 @@ const LoginPage = () => {
           </button>
         </form>
 
-        {errors.submit && (
-          <div className={styles.submitError}>{errors.submit}</div>
-        )}
+      
 
         {/* Footer Text */}
         <div className={styles.footerText}>

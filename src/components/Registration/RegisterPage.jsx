@@ -91,11 +91,13 @@ const RegisterPage = () => {
     }
 
     if (!formData.password.trim()) {
-      newErrors.password = "Password is required";
-    } else if (formData.password.length < 8) {
-      newErrors.password = "Password must be at least 8 characters";
-    } else if (!/^[A-Za-z0-9!@#$%^&*()_+[\]{};':"\\|,.<>/?-]+$/.test(formData.password)) {
-      newErrors.password = "Only Latin letters, numbers and symbols are allowed";
+    newErrors.password = "Password is required";
+  } else if (formData.password.length < 8) {
+    newErrors.password = "Password must be at least 8 characters";
+  } else if (formData.password.length > 25) {
+    newErrors.password = "Password must not exceed 25 characters";
+  } else if (!/^[A-Za-z0-9!@#$%^&*()_+[\]{};':"\\|,.<>/?-]+$/.test(formData.password)) {
+    newErrors.password = "Only Latin letters, numbers and symbols are allowed";
     } else if (
       !/[a-z]/.test(formData.password) || // нет маленькой буквы
       !/[A-Z]/.test(formData.password) || // нет заглавной буквы

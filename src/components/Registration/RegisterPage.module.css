@@ -70,10 +70,13 @@
 
 /* Ошибки */
 .error {
-  color: #ff4757;
-  font-size: 12px;
-  font-family: 'Original Surfer', cursive;
-  margin-top: 4px;
+  color: #ff0000;
+font-family: 'Original Surfer', cursive;
+  font-size: 14px;
+  margin-top: 8px; 
+  display: block;
+  text-align: center;
+  font-weight: 500; 
 }
 
 /* Кнопка */
