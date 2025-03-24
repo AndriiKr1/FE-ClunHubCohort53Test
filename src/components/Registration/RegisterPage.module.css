@@ -1,241 +1,206 @@
-@import url('https://fonts.googleapis.com/css2?family=Oleo+Script+Swash+Caps:wght@400;700&family=Inika:wght@400;700&family=Original+Surfer&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Original+Surfer&display=swap');
 
-/* Main container */
+/* Общий контейнер */
 .registerContainer {
   display: flex;
   flex-direction: column;
-  justify-content: center; 
+  justify-content: center;
   align-items: center;
   width: 100%;
   min-height: 100vh;
-  background: linear-gradient(to bottom, #86f6f8, #d1e826);
+  background: linear-gradient(to bottom, #EBFD83, #5DF649);
   box-sizing: border-box;
   padding: 20px;
-  overflow-x: hidden; 
+  overflow-x: hidden;
 }
 
-/* Content wrapper */
+/* Контентная обёртка */
 .content {
   display: flex;
   flex-direction: column;
   align-items: center;
-  width: 100%; 
-  max-width: 400px;
-  padding: 20px 10px; 
-  box-sizing: border-box;
-  margin-top: 2vh; 
+  width: 100%;
+  max-width: 380px;
+  padding: 20px 10px;
 }
 
-/* Logo */
+/* Логотип */
 .logoContainer {
-  width: 100%;
   display: flex;
   justify-content: center;
-  margin-bottom: 3vh; 
+  margin-bottom: 25px;
 }
 
 .logo {
-  width: 50%; 
+  width: 120px;
   height: auto;
-  max-width: 200px; 
 }
 
-/* Form styling */
+/* Форма */
 .form {
   width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 16px; 
-  margin: 2vh 0; 
+  gap: 12px;
 }
 
-/* Input field */
+.inputGroup {
+  width: 100%;
+}
+
+/* Поля ввода */
 .input {
   width: 100%;
-  padding: 14px 18px;
+  padding: 10px 16px;
   border-radius: 30px;
   border: none;
-  font-family: 'Original Surfer', serif;
-  letter-spacing: 2px;
-  font-size: 22px; 
-  color: #777;
-  background-color: white;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  font-family: 'Original Surfer', cursive;
+  font-size: 16px;
+  letter-spacing: 1px;
+  color: #444;
+  background-color: #fff;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
   outline: none;
-  box-sizing: border-box; 
 }
 
 .input::placeholder {
-  color: #bbb;
+  color: #aaa;
   font-style: italic;
 }
 
-
-
-.avatarLabel {
-  color: #000000;
-  font-style: italic;
-  margin-bottom: 10px;
-  font-family: 'Oleo Script Swash Caps', serif;
-  letter-spacing: 2px;
-}
-
-.avatarGrid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  justify-content: center;
-  padding: 10px;
-  background-color: rgb(245, 237, 237);
-  border-radius: 30px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-}
-
-.avatarItem {
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  cursor: pointer;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  border: 2px solid transparent;
-  transition: all 0.2s ease;
-  padding: 2px;
-}
-
-.avatarItem:hover {
-  transform: scale(1.1);
-}
-
-.selectedAvatar {
-  border-color: #206C9D;
-  background-color: rgba(32, 108, 157, 0.1);
-}
-
-.avatarImage {
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  object-fit: cover;
-}
-
-
-
-/* Error message */
+/* Ошибки */
 .error {
   color: #ff4757;
   font-size: 12px;
-  margin-top: 5px;
-  display: block;
-  font-family: 'Inika', serif;
-  width: 100%; 
+  font-family: 'Original Surfer', cursive;
+  margin-top: 4px;
 }
 
-/* Submit button */
+/* Кнопка */
 .submitButton {
-  background-color: #93f3f3;
+  background-color: #E4FD80;
   color: #01578F;
   border: none;
-  border-radius: 50px;
-  padding: 12px 16px; 
-  font-size: 22px;
-  font-weight: 400;
-  text-align: center;
-  cursor: pointer;
-  transition: all 0.3s ease;
+  border-radius: 30px;
+  padding: 10px 16px;
+  font-size: 18px;
   font-family: 'Original Surfer', cursive;
   letter-spacing: 2px;
-  margin-top: 16px; 
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  width: 100%; 
-  max-width: 320px; 
-  align-self: center; 
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
 }
 
 .submitButton:hover {
   background-color: #206C9D;
-  color: white;
-  transform: scale(1.03); 
+  color: #fff;
+  transform: scale(1.03);
 }
 
 .submitButton:disabled {
-  background-color: #cccccc;
-  color: #666666;
+  background-color: #ccc;
+  color: #666;
   cursor: not-allowed;
   transform: none;
 }
 
-/* Footer */
+/* Текст ошибки отправки */
+.submitError {
+  color: #ff4757;
+  font-size: 13px;
+  font-family: 'Original Surfer', cursive;
+  text-align: center;
+  margin-top: 10px;
+}
+
+/* Подвал */
 .footerText {
   width: 100%;
-  font-family: 'Inika', serif;
-  font-size: 15px;
+  font-family: 'Original Surfer', cursive;
+  font-size: 14px;
   text-align: center;
   color: #645270;
   letter-spacing: 2px;
-  padding: 10px 0;
-  position: absolute; 
-  bottom: 30px; 
-  left: 0; 
+  margin-top: 20px;
 }
 
-/* Small screens */
-@media (max-width: 480px) {
-  .content {
-    padding: 10px 5px;
-  }
-  
-  .logo {
-    width: 40%;
-    min-width: 120px; 
-  }
-
-  .input {
-    font-size: 14px;
-    padding: 12px 16px;
-  }
-  
-  .submitButton {
-    font-size: 16px;
-    padding: 10px 14px;
-    max-width: 260px;
-  }
+/* Модальное окно с аватарами */
+.avatarModalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.3);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
 }
 
-/* Tablets */
-@media (min-width: 481px) and (max-width: 768px) {
-  .logo {
-    width: 45%;
-    max-width: 180px;
-  }
-  
-  .form {
-    width: 90%;
-  }
-  
-  .submitButton {
-    max-width: 280px;
-  }
+.avatarModal {
+  background-color: #fff;
+  border-radius: 20px;
+  padding: 20px;
+  text-align: center;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+  max-width: 260px; /* было 360px */
+  width: 90%;
 }
 
-/* Large screens */
-@media (min-width: 1025px) {
-  .content {
-    max-width: 600px;
-  }
 
-  .logo {
-    width: 40%;
-    max-width: 220px;
-  }
-  
-  .submitButton {
-    font-size: 20px;
-    max-width: 300px;
-  }
-  
-  .input {
-    font-size: 18px;
-  }
+.modalTitle {
+  font-family: 'Original Surfer', cursive;
+  font-size: 20px;
+  font-weight: 400;
+  letter-spacing: 2px;
+  color: #01578F;
+  margin-bottom: 16px;
+}
+
+/* Сетка аватаров */
+.avatarGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  justify-content: center;
+  margin-bottom: 18px;
+}
+
+.avatarImage {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  object-fit: cover;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: transform 0.2s ease;
+}
+
+.avatarImage:hover {
+  transform: scale(1.1);
+  border-color: #206C9D;
+}
+
+.selected {
+  border-color: #206C9D;
+  box-shadow: 0 0 5px #206C9D;
+}
+
+/* Кнопка Cancel */
+.cancelButton {
+  background-color: #b6f4f9;
+  color: #206C9D;
+  font-family: 'Original Surfer', cursive;
+  font-size: 16px;
+  padding: 10px 20px;
+  border-radius: 30px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cancelButton:hover {
+  background-color: #93e7f0;
+  transform: scale(1.05);
 }

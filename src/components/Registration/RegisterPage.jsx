@@ -5,29 +5,38 @@ import { registerUser } from '../../store/slices/authSlice';
 import styles from './RegisterPage.module.css';
 import clanHubLogo from '../../assets/images/Logo2.png';
 
+// Импорт аватаров
+import avatar1 from '../../assets/avatars/avatar1.png';
+import avatar2 from '../../assets/avatars/avatar2.png';
+import avatar3 from '../../assets/avatars/avatar3.png';
+import avatar4 from '../../assets/avatars/avatar4.png';
+import avatar5 from '../../assets/avatars/avatar5.png';
+import avatar6 from '../../assets/avatars/avatar6.png';
 
+const avatarOptions = [
+  { id: 'avatar1', image: avatar1 },
+  { id: 'avatar2', image: avatar2 },
+  { id: 'avatar3', image: avatar3 },
+  { id: 'avatar4', image: avatar4 },
+  { id: 'avatar5', image: avatar5 },
+  { id: 'avatar6', image: avatar6 },
+];
 
 const RegisterPage = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  /*const avatarOptions = [
-    { id: 'avatar1', image: avatar1 },
-    { id: 'avatar2', image: avatar2 },
-    { id: 'avatar3', image: avatar3 },
-    { id: 'avatar4', image: avatar4 },
-  ];*/
-  
   const [formData, setFormData] = useState({
     username: '',
-    //age: '',
-    //avatar: '',
+    age: '',
+    avatar: '',
     email: '',
     password: ''
   });
 
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
+  const [showAvatarModal, setShowAvatarModal] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -35,8 +44,7 @@ const RegisterPage = () => {
       ...prev,
       [name]: value
     }));
-    
-    
+
     if (errors[name]) {
       setErrors(prev => ({
         ...prev,
@@ -45,69 +53,74 @@ const RegisterPage = () => {
     }
   };
 
- /* const handleAvatarSelect = (avatarId) => {
+  const handleAvatarSelect = (avatarId) => {
     setFormData(prev => ({
       ...prev,
       avatar: avatarId
     }));
-    
+    setShowAvatarModal(false);
     if (errors.avatar) {
-      setErrors(prev => ({
-        ...prev,
-        avatar: ''
-      }));
+      setErrors(prev => ({ ...prev, avatar: '' }));
     }
   };
-*/
+
   const validateForm = () => {
     const newErrors = {};
-    
+
     if (!formData.username.trim()) {
       newErrors.username = "Username is required";
     }
-    /*
+
     if (!formData.age.trim()) {
       newErrors.age = "Age is required";
-    } else if (isNaN(formData.age) || parseInt(formData.age) <= 0) {
-      newErrors.age = "Please enter a valid age";
+    } else {
+      const ageValue = parseInt(formData.age);
+      if (isNaN(ageValue) || ageValue < 5 || ageValue > 100) {
+        newErrors.age = "Age must be between 5 and 100";
+      }
     }
-    
-    if (!formData.avatar.trim()) {
+
+    if (!formData.avatar) {
       newErrors.avatar = "Please choose an avatar";
-    } */
+    }
 
     if (!formData.email.trim()) {
       newErrors.email = "Email is required";
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
       newErrors.email = "Please enter a valid email";
     }
-    
+
     if (!formData.password.trim()) {
-      newErrors.password = "Password required";
+      newErrors.password = "Password is required";
     } else if (formData.password.length < 8) {
-      newErrors.password = "Password must be at least 8 characters long";
+      newErrors.password = "Password must be at least 8 characters";
+    } else if (!/^[A-Za-z0-9!@#$%^&*()_+[\]{};':"\\|,.<>/?-]+$/.test(formData.password)) {
+      newErrors.password = "Only Latin letters, numbers and symbols are allowed";
+    } else if (
+      !/[a-z]/.test(formData.password) || // нет маленькой буквы
+      !/[A-Z]/.test(formData.password) || // нет заглавной буквы
+      !/[0-9]/.test(formData.password) || // нет цифры
+      !/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(formData.password) // нет символа
+    ) {
+      newErrors.password = "Password must include uppercase, lowercase, number and special character";
     }
     
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    if (!validateForm()) {
-      return;
-    }
-    
+    if (!validateForm()) return;
+
     setIsLoading(true);
-    
     try {
-      
       await dispatch(registerUser(formData)).unwrap();
       navigate('/dashboard');
     } catch (error) {
       setErrors({
-        submit: error.message || 'Error while registering. Please try again later.'
+        submit: error.message || 'Registration failed. Try again.'
       });
     } finally {
       setIsLoading(false);
@@ -117,12 +130,10 @@ const RegisterPage = () => {
   return (
     <div className={styles.registerContainer}>
       <div className={styles.content}>
-         {/* Logo */}
         <div className={styles.logoContainer}>
           <img src={clanHubLogo} alt="ClanHub Logo" className={styles.logo} />
         </div>
 
-        {/* Registration form */}
         <form className={styles.form} onSubmit={handleSubmit} noValidate>
           <div className={styles.inputGroup}>
             <input
@@ -137,7 +148,6 @@ const RegisterPage = () => {
             {errors.username && <span className={styles.error}>{errors.username}</span>}
           </div>
 
-          {/* Age form 
           <div className={styles.inputGroup}>
             <input
               type="number"
@@ -151,29 +161,33 @@ const RegisterPage = () => {
             />
             {errors.age && <span className={styles.error}>{errors.age}</span>}
           </div>
-          
-           Avatar selection 
+
           <div className={styles.inputGroup}>
-            <div className={styles.avatarLabel}>Choose your avatar...</div>
-            <div className={styles.avatarGrid}>
-              {avatarOptions.map((avatar) => (
-                <div 
-                  key={avatar.id}
-                  className={`${styles.avatarItem} ${formData.avatar === avatar.id ? styles.selectedAvatar : ''}`}
-                  onClick={() => handleAvatarSelect(avatar.id)}
-                >
-                  <img 
-                    src={avatar.image} 
-                    alt={`Avatar ${avatar.id}`} 
-                    className={styles.avatarImage}
-                  />
-                </div>
-              ))}
+            <div
+              className={styles.input}
+              onClick={() => setShowAvatarModal(true)}
+              style={{
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between'
+              }}
+            >
+              {formData.avatar
+                ? (
+                  <>
+                    <span>Avatar selected</span>
+                    <img
+                      src={avatarOptions.find(a => a.id === formData.avatar)?.image}
+                      alt="Selected Avatar"
+                      style={{ width: '40px', height: '40px', borderRadius: '50%' }}
+                    />
+                  </>
+                )
+                : "Choose your avatar..."}
             </div>
             {errors.avatar && <span className={styles.error}>{errors.avatar}</span>}
           </div>
-          
-*/}
 
           <div className={styles.inputGroup}>
             <input
@@ -203,20 +217,42 @@ const RegisterPage = () => {
 
           {errors.submit && <div className={styles.submitError}>{errors.submit}</div>}
 
-          <button 
-            type="submit" 
+          <button
+            type="submit"
             className={styles.submitButton}
             disabled={isLoading}
           >
-            {isLoading ? 'Creation...' : 'Create Account'}
+            {isLoading ? 'Creating...' : 'Create Account'}
           </button>
         </form>
 
-        {/* Footer Text */}
         <div className={styles.footerText}>
           <p>family planner</p>
         </div>
       </div>
+
+      {/* Avatar modal */}
+      {showAvatarModal && (
+        <div className={styles.avatarModalOverlay}>
+          <div className={styles.avatarModal}>
+            <h3 className={styles.modalTitle}>Choose your avatar</h3>
+            <div className={styles.avatarGrid}>
+              {avatarOptions.map(avatar => (
+                <img
+                  key={avatar.id}
+                  src={avatar.image}
+                  alt={avatar.id}
+                  className={`${styles.avatarImage} ${formData.avatar === avatar.id ? styles.selected : ''}`}
+                  onClick={() => handleAvatarSelect(avatar.id)}
+                />
+              ))}
+            </div>
+            <button className={styles.cancelButton} onClick={() => setShowAvatarModal(false)}>
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

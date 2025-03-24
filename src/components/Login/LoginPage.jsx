@@ -59,11 +59,11 @@ const LoginPage = () => {
     setIsLoading(true);
 
     try {
-      await dispatch(loginUser(formData));
+      await dispatch(loginUser(formData)).unwrap();
       navigate("/dashboard");
     } catch (error) {
       setErrors({
-        submit: error.message || "Login error. Please try again later.",
+        submit: error.message || "Incorrect email or password. Try again.",
       });
     } finally {
       setIsLoading(false);
