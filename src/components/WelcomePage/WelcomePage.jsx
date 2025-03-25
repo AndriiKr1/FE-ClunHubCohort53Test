@@ -28,7 +28,7 @@ const WelcomePage = () => {
             className={`${styles.actionButton} ${styles.createPlannerButton}`}
             onClick={handleCreatePlanner}
           >
-            I want to create my first planner
+            I want to create my account
           </button>
           
           <button 

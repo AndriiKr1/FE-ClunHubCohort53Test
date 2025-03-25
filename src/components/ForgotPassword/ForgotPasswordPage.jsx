@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import styles from "./ForgotPasswordPage.module.css";
 import clanHubLogo from "../../assets/images/Logo2.png";
@@ -11,21 +11,29 @@ const ForgotPasswordPage = () => {
   const [repeatPassword, setRepeatPassword] = useState("");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isCodeSent, setIsCodeSent] = useState(false);
-  const [isCodeConfirmed, setIsCodeConfirmed] = useState(false);
+  const [isLinkSent, setIsLinkSent] = useState(false);
+  const [isCodeVerified, setIsCodeVerified] = useState(false);
   
   // Timer states
-  const [remainingTime, setRemainingTime] = useState(120); // 2 minutes in seconds
+  const [remainingTime, setRemainingTime] = useState(120); // 2 minutes UI countdown
+  const [canResend, setCanResend] = useState(false);
   const [isCodeExpired, setIsCodeExpired] = useState(false);
   
-  // Set up countdown timer when code is sent
+  // Create refs for code input boxes
+  const codeInputRefs = useRef([]);
+  // Initialize with 6 refs
+  if (codeInputRefs.current.length !== 6) {
+    codeInputRefs.current = Array(6).fill().map(() => React.createRef());
+  }
+  
+  // Set up countdown timer when link is sent
   useEffect(() => {
     let intervalId;
-    if (isCodeSent && !isCodeConfirmed && remainingTime > 0) {
+    if (isLinkSent && !isCodeVerified && remainingTime > 0) {
       intervalId = setInterval(() => {
         setRemainingTime(prev => {
           if (prev <= 1) {
-            setIsCodeExpired(true);
+            setCanResend(true);
             clearInterval(intervalId);
             return 0;
           }
@@ -34,7 +42,7 @@ const ForgotPasswordPage = () => {
       }, 1000);
     }
     return () => clearInterval(intervalId);
-  }, [isCodeSent, isCodeConfirmed, remainingTime]);
+  }, [isLinkSent, isCodeVerified, remainingTime]);
   
   // Format timer for display
   const formatTime = (seconds) => {
@@ -47,30 +55,75 @@ const ForgotPasswordPage = () => {
     const val = e.target.value;
     setError("");
 
-    //email input
-    if (!isCodeSent) {
+    // Email input
+    if (!isLinkSent) {
       setEmail(val);
-    }
-   
-    //code input
-    else if (isCodeSent && !isCodeConfirmed) {
-      if (/^\d{0,6}$/.test(val)) {
-        setCode(val);
-      }
     }
   };
   
-  // Handle code resend
-  const handleResendCode = () => {
+  // Handle code input changes
+  const handleCodeChange = (index, e) => {
+    const value = e.target.value;
+    
+    // Only allow digits
+    if (!/^\d*$/.test(value)) return;
+    
+    // Update the code
+    setCode(prevCode => {
+      const codeArray = prevCode.split('');
+      // Replace or clear the character at the current index
+      codeArray[index] = value.slice(-1); // Take only the last character if multiple are pasted
+      return codeArray.join('');
+    });
+    
+    // Clear error message
+    setError("");
+    
+    // Auto-focus to next input if a digit was entered
+    if (value && index < 5) {
+      codeInputRefs.current[index + 1].current.focus();
+    }
+  };
+  
+  // Handle keydown for backspace navigation
+  const handleKeyDown = (index, e) => {
+    // If backspace is pressed and the input is empty, focus previous input
+    if (e.key === 'Backspace' && !e.target.value && index > 0) {
+      codeInputRefs.current[index - 1].current.focus();
+    }
+  };
+  
+  // Handle paste for the entire code
+  const handlePaste = (e) => {
+    e.preventDefault();
+    const pastedData = e.clipboardData.getData('text');
+    const digits = pastedData.replace(/\D/g, '').slice(0, 6).split('');
+    
+    if (digits.length) {
+      const newCode = digits.concat(Array(6 - digits.length).fill('')).join('');
+      setCode(newCode);
+      
+      // Focus the appropriate input after paste
+      const focusIndex = Math.min(digits.length, 5);
+      codeInputRefs.current[focusIndex].current.focus();
+    }
+  };
+  
+  // Handle link resend
+  const handleResendLink = () => {
+    if (!canResend && !isCodeExpired) return;
+    
     setIsSubmitting(true);
     setIsCodeExpired(false);
-    // Reset timer to 2 minutes
+    setCanResend(false);
+    // Reset timer to 2 minutes for UI
     setRemainingTime(120);
+    setCode('');
     
-    // Simulate API call
+    // Simulate API call to resend the password reset link
     setTimeout(() => {
       setIsSubmitting(false);
-      // Code successfully resent
+      // Link successfully resent
     }, 2000);
   };
 
@@ -102,8 +155,8 @@ const ForgotPasswordPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    //email validation
-    if (!isCodeSent) {
+    // Email validation and link sending
+    if (!isLinkSent) {
       if (!email.trim()) {
         setError("Email is required");
         return;
@@ -113,35 +166,56 @@ const ForgotPasswordPage = () => {
       }
 
       setIsSubmitting(true);
+      
+      // Simulate API call to send password reset link
       setTimeout(() => {
         setIsSubmitting(false);
-        setIsCodeSent(true); 
-        // Set initial timer to 2 minutes
+        setIsLinkSent(true); 
+        // Set initial timer to 2 minutes for UI countdown
         setRemainingTime(120);
+        // Focus the first code input box
+        setTimeout(() => {
+          if (codeInputRefs.current[0].current) {
+            codeInputRefs.current[0].current.focus();
+          }
+        }, 100);
       }, 2000);
     }
 
-    //code validation
-    else if (isCodeSent && !isCodeConfirmed) {
-      if (!/^\d{6}$/.test(code)) {
-        setError("Enter a valid 6-digit code");
+    // Code verification from the link
+    else if (isLinkSent && !isCodeVerified) {
+      if (code.length !== 6) {
+        setError("Please enter all 6 digits of the verification code");
         return;
       }
       
-      if (isCodeExpired) {
-        setError("Code has expired. Please request a new code");
-        return;
-      }
-
       setIsSubmitting(true);
+      
+      // Simulate API call to verify the code
+      // In a real app, you would check if the code is expired (> 5 minutes) or incorrect
       setTimeout(() => {
         setIsSubmitting(false);
-        setIsCodeConfirmed(true);
+        
+        // Example of different error scenarios:
+        // 1. Simulate expired code (more than 5 minutes have passed)
+        if (code === "111111") {
+          setIsCodeExpired(true);
+          setError("Code is invalid (expired)");
+          return;
+        }
+        // 2. Simulate incorrect code
+        else if (code === "222222") {
+          setError("Code is incorrect");
+          return;
+        }
+        
+        // Valid code
+        setIsCodeVerified(true);
       }, 1000);
     }
 
-    //password validation
-    else if (isCodeConfirmed) {
+    // Password change
+    else if (isCodeVerified) {
       const passwordError = validatePassword(newPassword);
       if (passwordError) {
         setError(passwordError);
@@ -154,6 +228,8 @@ const ForgotPasswordPage = () => {
       }
 
       setIsSubmitting(true);
+      
+      // Simulate API call to change password
       setTimeout(() => {
         setIsSubmitting(false);
         alert("Password successfully changed!");
@@ -170,68 +246,88 @@ const ForgotPasswordPage = () => {
         </div>
 
         <h2 className={styles.title}>
-          {!isCodeSent
+          {!isLinkSent
             ? "Recover password"
-            : !isCodeConfirmed
-            ? "Enter your code"
+            : !isCodeVerified
+            ? "Enter the code from the link"
             : "Create a new password"}
         </h2>
 
         <form className={styles.form} onSubmit={handleSubmit} noValidate>
-          {!isCodeSent && (
-            <input
-              type="email"
-              value={email}
-              onChange={handleChange}
-              placeholder="Enter your e-mail"
-              className={styles.input}
-              disabled={isSubmitting}
-              noValidate
-            />
-          )}
-          
-          {isCodeSent && !isCodeConfirmed && (
+          {!isLinkSent && (
             <>
               <input
-                type="text"
-                inputMode="numeric"
-                pattern="\d*"
-                value={code}
+                type="email"
+                value={email}
                 onChange={handleChange}
-                placeholder="Enter code"
+                placeholder="Enter your e-mail"
                 className={styles.input}
                 disabled={isSubmitting}
+                noValidate
               />
+              <p className={styles.infoText}>
+                We'll send you a link with a password reset code that will be valid for 5 minutes
+              </p>
+            </>
+          )}
+          
+          {isLinkSent && !isCodeVerified && (
+            <>
+              {/* Code input boxes */}
+              <div className={styles.codeInputContainer} onPaste={handlePaste}>
+                {Array(6).fill().map((_, index) => (
+                  <input
+                    key={index}
+                    ref={codeInputRefs.current[index]}
+                    type="text"
+                    maxLength={1}
+                    className={styles.codeInputBox}
+                    value={code[index] || ''}
+                    onChange={(e) => handleCodeChange(index, e)}
+                    onKeyDown={(e) => handleKeyDown(index, e)}
+                    disabled={isSubmitting}
+                    inputMode="numeric"
+                    autoComplete="one-time-code"
+                  />
+                ))}
+              </div>
               
               {/* Timer display */}
               <div className={styles.timerContainer}>
-                <span className={styles.timerText}>
-                  {isCodeExpired 
-                    ? "Code expired" 
-                    : `Code valid for: ${formatTime(remainingTime)}`}
-                </span>
+                {isCodeExpired ? (
+                  <></>
+                ) : remainingTime === 0 ? (
+                  <span className={styles.timerText}>You can request a new link</span>
+                ) : (
+                  <span className={styles.timerText}>
+                    Wait before resending: {formatTime(remainingTime)}
+                  </span>
+                )}
                 
                 {/* Resend button */}
-                {(isCodeExpired || remainingTime === 0) && (
+                {(canResend || isCodeExpired) && (
                   <button 
                     type="button"
-                    onClick={handleResendCode} 
+                    onClick={handleResendLink} 
                     className={styles.resendButton}
                     disabled={isSubmitting}
                   >
-                    {isSubmitting ? "Sending..." : "Resend code"}
+                    {isSubmitting ? "Sending..." : "Send a new link"}
                   </button>
                 )}
               </div>
             </>
           )}
           
-          {isCodeConfirmed && (
+          {isCodeVerified && (
             <>
               <input
                 type="password"
                 value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
+                onChange={(e) => {
+                  setNewPassword(e.target.value);
+                  setError("");
+                }}
                 placeholder="Create new password"
                 className={styles.input}
                 disabled={isSubmitting}
@@ -239,7 +335,10 @@ const ForgotPasswordPage = () => {
               <input
                 type="password"
                 value={repeatPassword}
-                onChange={(e) => setRepeatPassword(e.target.value)}
+                onChange={(e) => {
+                  setRepeatPassword(e.target.value);
+                  setError("");
+                }}
                 placeholder="Repeat your new password"
                 className={styles.input}
                 disabled={isSubmitting}
@@ -250,11 +349,11 @@ const ForgotPasswordPage = () => {
           {error && <span className={styles.error}>{error}</span>}
 
           <button type="submit" className={styles.submitButton} disabled={isSubmitting}>
-            {!isCodeSent
-              ? isSubmitting ? "Sending..." : "Send code"
-              : !isCodeConfirmed
-              ? "OK"
-              : "Done"}
+            {!isLinkSent
+              ? isSubmitting ? "Sending..." : "Send reset link"
+              : !isCodeVerified
+              ? "Verify code"
+              : "Change password"}
           </button>
         </form>
       </div>

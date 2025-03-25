@@ -6,13 +6,14 @@ import axios from "axios";
 export const registerUser = createAsyncThunk(
   "auth/signup",
   async (userData, { rejectWithValue }) => {
+    console.log("Sending registration data:", userData);
     try {
       const response = await axios.post(`/api/auth/sign-up`, {
-        name: userData.username,
+        username: userData.username,
         email: userData.email,
-        password: userData.password
-       /* age: userData.age,        
-        avatar: userData.avatar */
+        password: userData.password,
+        age: parseInt(userData.age),        
+        avatarId: userData.avatar 
       });
       return response.data;
     } catch (error) {
