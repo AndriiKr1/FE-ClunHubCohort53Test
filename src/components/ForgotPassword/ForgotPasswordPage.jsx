@@ -208,9 +208,17 @@ const ForgotPasswordPage = () => {
           setError("Code is incorrect");
           return;
         }
-        
-        // Valid code
         setIsCodeVerified(true);
+
+        // Optional: Add a step to show a modal or additional verification
+        if (code === "333333") {
+          // Example of additional verification step
+          const confirm = window.confirm("Do you want to proceed with password reset?");
+          if (!confirm) {
+            setIsCodeVerified(false);
+            return;
+          }
+        }
       }, 1000);
     }
 
