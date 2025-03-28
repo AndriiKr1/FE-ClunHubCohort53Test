@@ -1,19 +1,25 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { requestPasswordReset, resetPassword, clearPasswordResetState } from "../../store/slices/authSlice";
 import styles from "./ForgotPasswordPage.module.css";
 import clanHubLogo from "../../assets/images/Logo2.png";
 
 const ForgotPasswordPage = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const { isLoading, passwordReset } = useSelector(state => state.auth);
+  
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
   const [newPassword, setNewPassword] = useState(""); 
   const [repeatPassword, setRepeatPassword] = useState("");
   const [error, setError] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isLinkSent, setIsLinkSent] = useState(false);
-  const [isCodeVerified, setIsCodeVerified] = useState(false);
-  
+
+  const isSubmitting = isLoading || passwordReset.isLoading;
+  const isLinkSent = passwordReset.isLinkSent;
+  const isCodeVerified = passwordReset.isCodeVerified;
+
   // Timer states
   const [remainingTime, setRemainingTime] = useState(120); // 2 minutes UI countdown
   const [canResend, setCanResend] = useState(false);
@@ -26,6 +32,12 @@ const ForgotPasswordPage = () => {
     codeInputRefs.current = Array(6).fill().map(() => React.createRef());
   }
   
+  useEffect(() => {
+    return () => {
+      dispatch(clearPasswordResetState());
+    };
+  }, [dispatch]);
+
   // Set up countdown timer when link is sent
   useEffect(() => {
     let intervalId;
@@ -43,7 +55,30 @@ const ForgotPasswordPage = () => {
     }
     return () => clearInterval(intervalId);
   }, [isLinkSent, isCodeVerified, remainingTime]);
+
+  useEffect(() => {
+    if (passwordReset.error) {
+      if (passwordReset.error === "code_expired") {
+        setIsCodeExpired(true);
+        setError("Code is expired. Please request a new one.");
+      } else if (passwordReset.error === "invalid_token") {
+        setError("The code you entered is incorrect.");
+      } else {
+        setError(passwordReset.error);
+      }
+    }
+  }, [passwordReset.error]);
   
+  useEffect(() => {
+    if (isLinkSent && !isCodeVerified) {
+      setTimeout(() => {
+        if (codeInputRefs.current[0].current) {
+          codeInputRefs.current[0].current.focus();
+        }
+      }, 100);
+    }
+  }, [isLinkSent, isCodeVerified]);
+
   // Format timer for display
   const formatTime = (seconds) => {
     const mins = Math.floor(seconds / 60);
@@ -65,14 +100,13 @@ const ForgotPasswordPage = () => {
   const handleCodeChange = (index, e) => {
     const value = e.target.value;
     
-    // Only allow digits
     if (!/^\d*$/.test(value)) return;
     
     // Update the code
     setCode(prevCode => {
       const codeArray = prevCode.split('');
-      // Replace or clear the character at the current index
-      codeArray[index] = value.slice(-1); // Take only the last character if multiple are pasted
+     
+      codeArray[index] = value.slice(-1); 
       return codeArray.join('');
     });
     
@@ -87,8 +121,7 @@ const ForgotPasswordPage = () => {
   
   // Handle keydown for backspace navigation
   const handleKeyDown = (index, e) => {
-    // If backspace is pressed and the input is empty, focus previous input
-    if (e.key === 'Backspace' && !e.target.value && index > 0) {
+       if (e.key === 'Backspace' && !e.target.value && index > 0) {
       codeInputRefs.current[index - 1].current.focus();
     }
   };
@@ -113,18 +146,14 @@ const ForgotPasswordPage = () => {
   const handleResendLink = () => {
     if (!canResend && !isCodeExpired) return;
     
-    setIsSubmitting(true);
     setIsCodeExpired(false);
     setCanResend(false);
     // Reset timer to 2 minutes for UI
     setRemainingTime(120);
     setCode('');
     
-    // Simulate API call to resend the password reset link
-    setTimeout(() => {
-      setIsSubmitting(false);
-      // Link successfully resent
-    }, 2000);
+    // Dispatch the request to resend code
+    dispatch(requestPasswordReset(email));
   };
 
   // Validate password (same as registration)
@@ -154,6 +183,7 @@ const ForgotPasswordPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
 
     // Email validation and link sending
     if (!isLinkSent) {
@@ -165,21 +195,7 @@ const ForgotPasswordPage = () => {
         return;
       }
 
-      setIsSubmitting(true);
-      
-      // Simulate API call to send password reset link
-      setTimeout(() => {
-        setIsSubmitting(false);
-        setIsLinkSent(true); 
-        // Set initial timer to 2 minutes for UI countdown
-        setRemainingTime(120);
-        // Focus the first code input box
-        setTimeout(() => {
-          if (codeInputRefs.current[0].current) {
-            codeInputRefs.current[0].current.focus();
-          }
-        }, 100);
-      }, 2000);
+      dispatch(requestPasswordReset(email));
     }
 
     // Code verification from the link
@@ -189,37 +205,12 @@ const ForgotPasswordPage = () => {
         return;
       }
       
-      setIsSubmitting(true);
-      
-      // Simulate API call to verify the code
-      // In a real app, you would check if the code is expired (> 5 minutes) or incorrect
-      setTimeout(() => {
-        setIsSubmitting(false);
-        
-        // Example of different error scenarios:
-        // 1. Simulate expired code (more than 5 minutes have passed)
-        if (code === "111111") {
-          setIsCodeExpired(true);
-          setError("Code is invalid (expired)");
-          return;
-        }
-        // 2. Simulate incorrect code
-        else if (code === "222222") {
-          setError("Code is incorrect");
-          return;
-        }
-        setIsCodeVerified(true);
-
-        // Optional: Add a step to show a modal or additional verification
-        if (code === "333333") {
-          // Example of additional verification step
-          const confirm = window.confirm("Do you want to proceed with password reset?");
-          if (!confirm) {
-            setIsCodeVerified(false);
-            return;
-          }
-        }
-      }, 1000);
+      // Only validate code, don't set password yet
+      dispatch(resetPassword({
+        token: code,
+        newPassword: "temp", // Will be validated server-side, real password is set in next step
+        confirmPassword: "temp"
+      }));
     }
 
     // Password change
@@ -235,17 +226,19 @@ const ForgotPasswordPage = () => {
         return;
       }
 
-      setIsSubmitting(true);
-      
-      // Simulate API call to change password
-      setTimeout(() => {
-        setIsSubmitting(false);
-        alert("Password successfully changed!");
-        navigate("/login");
-      }, 1000);
+      // Reset the password with verified code and new password
+      dispatch(resetPassword({
+        token: code,
+        newPassword,
+        confirmPassword: repeatPassword
+      })).then((result) => {
+        if (!result.error) {
+          alert("Password successfully changed!");
+          navigate("/login");
+        }
+      });
     }
   };
-
   return (
     <div className={styles.container}>
       <div className={styles.content}>
