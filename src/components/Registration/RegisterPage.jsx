@@ -119,7 +119,7 @@ const RegisterPage = () => {
     setIsLoading(true);
     try {
       await dispatch(registerUser(formData)).unwrap();
-      navigate('/dashboard');
+      navigate('/login');
     } catch (error) {
       setErrors({
         submit: error.message || 'Registration failed. Try again.'
