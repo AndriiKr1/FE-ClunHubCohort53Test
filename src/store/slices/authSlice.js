@@ -72,36 +72,20 @@ export const resetPassword = createAsyncThunk(
   "auth/resetPassword",
   async (data, { rejectWithValue }) => {
     try {
-      // Виводимо дані, які відправляємо
-      console.log("Sending data to reset password:", {
-        token: data.token,
-        newPassword: data.newPassword,
-        confirmPassword: data.confirmPassword
-      });
-      
-      // Надсилаємо з тими самими ключами, які очікує бекенд
+      console.log("Sending reset password request:", data);
       const response = await axios.post(`/api/auth/reset-password`, {
         token: data.token,
         newPassword: data.newPassword,
         confirmPassword: data.confirmPassword
       });
-      
+      console.log("Reset password response:", response.data);
       return response.data;
     } catch (error) {
-      // Отримуємо більше інформації про помилку
-      console.error("Reset password error:", error);
-      if (error.response) {
-        console.error("Server response:", error.response.data);
-        console.error("Status code:", error.response.status);
-        
-        // Повертаємо дані про помилку з сервера
-        return rejectWithValue(error.response.data || "Failed to reset password");
-      }
-      return rejectWithValue("Network error");
+      console.error("Reset password error:", error.response?.data || error.message);
+      return rejectWithValue(error.response?.data || "Failed to reset password");
     }
   }
 );
-
 const initialState = {
   user: null,
   token: null,
@@ -197,7 +181,13 @@ const authSlice = createSlice({
       })
       .addCase(resetPassword.rejected, (state, action) => {
         state.passwordReset.isLoading = false;
-        state.passwordReset.error = action.payload;
+        
+        // Handle ErrorResponseDto format
+        if (action.payload && action.payload.error) {
+          state.passwordReset.error = action.payload.error;
+        } else {
+          state.passwordReset.error = action.payload || "Failed to reset password";
+        }
       });
   },
 });

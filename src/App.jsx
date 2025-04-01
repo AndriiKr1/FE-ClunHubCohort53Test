@@ -4,10 +4,11 @@ import WelcomePage from './components/WelcomePage/WelcomePage';
 import RegisterPage from './components/Registration/RegisterPage';
 import LoginPage from './components/Login/LoginPage';
 import ForgotPasswordPage from './components/ForgotPassword/ForgotPasswordPage';
+import Dashboard from './components/Dashboard/Dashboard';
 
 // Заглушки для майбутніх компонентів
 
-const Dashboard = () => <div>Dashboard Page</div>;
+//const Dashboard = () => <div>Dashboard Page</div>;
 
 function App() {
   return (
