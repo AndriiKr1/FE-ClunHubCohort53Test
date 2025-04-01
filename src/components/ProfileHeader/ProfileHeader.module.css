@@ -1,0 +1,70 @@
+.profileHeader {
+    display: flex;
+    align-items: flex-end;
+    position: relative;
+    width: 100%;
+    max-width: 320px;
+   
+    height: 150px;
+  }
+  
+  .avatar {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-right: -2mm;
+  }
+  
+  .userInfo {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 10px;
+    width: calc(100% - 150px + 2mm);
+  }
+  
+  .inputDisabled {
+    background-color: white;
+    border-radius: 20px;
+    padding: 8px 16px;
+    font-size: 16px;
+    letter-spacing: 2px;
+    color: #777;
+    border: 1px solid #ccc;
+    font-family: 'Original Surfer', cursive;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    height: 40px; 
+    box-sizing: border-box;
+  }
+  
+  .userInfo div:first-child {
+    width: 100%;
+    max-width: 320px;
+  }
+  
+  .userInfo div:last-child {
+    width: 3cm;
+    height: 40px; 
+  }
+  
+  .logoutButton {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 3cm; 
+    height: 40px;
+    padding: 0; 
+    font-size: 14px;
+    background-color: #86F6F8;
+    color: #01578F;
+    border: 2px solid #2DACC0;
+    border-radius: 20px;
+    cursor: pointer;
+    font-family: 'Original Surfer', cursive;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    white-space: nowrap;
+    text-align: center;
+    line-height: 36px; 
+    box-sizing: border-box;
+  }

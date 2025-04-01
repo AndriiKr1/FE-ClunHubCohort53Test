@@ -197,6 +197,7 @@ const ForgotPasswordPage = () => {
           {step === "email" && (
             <>
               <input
+                id="email-input"
                 type="email"
                 value={email}
                 onChange={(e) => {
@@ -244,6 +245,7 @@ const ForgotPasswordPage = () => {
                 )}
                 {(canResend || isCodeExpired) && (
                   <button
+                    id="resend-link-btn"
                     type="button"
                     onClick={handleResendLink}
                     className={styles.resendButton}
@@ -258,6 +260,7 @@ const ForgotPasswordPage = () => {
           {step === "password" && (
             <>
               <input
+                id="new-password-input"
                 type="password"
                 value={newPassword}
                 onChange={(e) => {
@@ -269,6 +272,7 @@ const ForgotPasswordPage = () => {
                 disabled={isSubmitting}
               />
               <input
+                id="repeat-password-input"
                 type="password"
                 value={repeatPassword}
                 onChange={(e) => {
@@ -282,7 +286,9 @@ const ForgotPasswordPage = () => {
             </>
           )}
           {error && <span className={styles.error}>{error}</span>}
-          <button type="submit" className={styles.submitButton} disabled={isSubmitting }>
+          <button 
+          id="submit-btn" 
+          type="submit" className={styles.submitButton} disabled={isSubmitting }>
             {isSubmitting ? "Submitting..." : step === "email" ? "Send reset link" : "Next"}
            
           </button>

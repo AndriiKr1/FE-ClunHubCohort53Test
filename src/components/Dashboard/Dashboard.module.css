@@ -1,0 +1,302 @@
+@import url('https://fonts.googleapis.com/css2?family=Original+Surfer&family=Inika&display=swap');
+
+.dashboardContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px;
+  width: 100%;
+  min-height: 100vh;
+  background: linear-gradient(to bottom, #9bf0e1, #f8e861);
+  font-family: 'Original Surfer', cursive;
+  position: relative;
+}
+
+.addTaskButton {
+  width: 100%;
+  max-width: 320px;
+  margin: 8px 0;
+  background-color: #8BF3FF;
+  color: #01578F;
+  border: 2px solid #2DACC0;
+  border-radius: 30px;
+  padding: 8px 16px;
+  font-size: 15px;
+  letter-spacing: 2px;
+  font-family: 'Original Surfer', cursive;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s ease;
+  font-weight: bold;
+  text-align: center;
+}
+
+.addTaskButton:hover {
+  transform: scale(1.05);
+}
+
+/* Стили для кнопок-стрелок */
+.arrowButton {
+  background: none;
+  border: none;
+  padding: 10px;
+  cursor: pointer;
+  margin: 5px 0;
+  transition: transform 0.2s;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.arrowButtonTop {
+  margin-top: 10px;
+}
+
+.arrowButtonBottom {
+  margin-bottom: 10px;
+}
+
+.arrowButton:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.arrowButton:hover:not(:disabled) {
+  transform: scale(1.1);
+}
+
+.arrowIcon {
+  width: 30px;
+  height: 30px;
+}
+
+.taskList {
+  width: 100%;
+  max-width: 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 10px 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.taskRow {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: 44px;
+}
+
+.taskButton, .taskText {
+  flex: 1;
+  min-width: 0;
+  height: 44px;
+  padding: 0 15px;
+  background: #3efcc0;
+  border: none;
+  border-radius: 16px;
+  font-size: 15px;
+  cursor: default;
+  letter-spacing: 2px;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2),
+              0 4px 8px rgba(255, 255, 255, 0.3);
+  font-family: 'Original Surfer', cursive;
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: flex;
+  align-items: center;
+  color: #01578F;
+  font-weight: bold;
+}
+
+.taskIcons {
+  display: flex;
+  height: 44px;
+  margin-left: 5px;
+}
+
+.icon {
+  width: 44px;
+  height: 44px;
+  object-fit: contain;
+  margin-left: -10px;
+  position: relative;
+  transition: transform 0.2s ease;
+  cursor: pointer;
+}
+
+.icon:first-child {
+  margin-left: 0;
+}
+
+.icon:hover {
+  transform: scale(1.1);
+  z-index: 1;
+}
+
+.completedButton {
+  width: 100%;
+  max-width: 320px;
+  margin-top: 8px;
+  padding: 8px 16px;
+  background-color: #8BF3FF;
+  color: #01578F;
+  border: 2px solid #2DACC0;
+  border-radius: 30px;
+  font-size: 15px;
+  letter-spacing: 2px;
+  font-family: 'Original Surfer', cursive;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  font-weight: bold;
+}
+
+.completedButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.footerText {
+  margin-top: auto;
+  padding-top: 20px;
+  font-size: 15px;
+  color: #645270;
+  letter-spacing: 2px;
+  font-family: 'Inika', serif;
+  text-align: center;
+  position: relative;
+  width: 100%;
+}
+
+/* Модальные окна */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal {
+  background: white;
+  padding: 30px;
+  border-radius: 20px;
+  width: 90%;
+  max-width: 300px;
+  text-align: center;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.modalTitle {
+  font-size: 20px;
+  margin-bottom: 10px;
+  letter-spacing: 2px;
+  color: #01578F;
+  font-family: 'Original Surfer', cursive;
+}
+
+.modalText {
+  font-size: 16px;
+  margin-bottom: 8px;
+  color: #01578F;
+  font-family: 'Original Surfer', cursive;
+}
+
+.okButton {
+  margin-top: 10px;
+  background: #19FEA6;
+  color: #01578F;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 30px;
+  cursor: pointer;
+  font-size: 16px;
+  font-family: 'Original Surfer', cursive;
+  font-weight: bold;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.okButton:hover {
+  background: #15e895;
+}
+
+.confirmationButtons {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.yesButton {
+  background: #3efcc0 !important;
+  color: #01578f;
+  padding: 8px 16px;
+  border-radius: 30px;
+  font-weight: bold;
+} 
+
+.noButton {
+  background: #ff6b6b !important;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 30px;
+  font-weight: bold;
+}
+
+/* Добавленные стили из верхнего кода */
+.errorInput {
+  border: 2px solid #ff6b6b !important;
+  animation: shake 0.5s;
+}
+
+.errorMessage {
+  color: #ff6b6b;
+  font-size: 14px;
+  margin-top: -15px;
+  margin-bottom: 15px;
+  text-align: center;
+  font-family: 'Original Surfer', cursive;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-5px); }
+  40%, 80% { transform: translateX(5px); }
+}
+
+.successPopup {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.popupContent {
+  background: white;
+  padding: 30px;
+  border-radius: 20px;
+  text-align: center;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  max-width: 80%;
+}
+
+.popupContent p {
+  color: #01578F;
+  font-size: 18px;
+  margin-bottom: 20px;
+  font-family: 'Original Surfer', cursive;
+}

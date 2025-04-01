@@ -102,6 +102,7 @@ const LoginPage = () => {
         <form className={styles.form} onSubmit={handleSubmit} noValidate>
           <div className={styles.inputGroup}>
             <input
+              id="email-input"
               type="email"
               name="email"
               value={formData.email}
@@ -117,6 +118,7 @@ const LoginPage = () => {
 
           <div className={styles.inputGroup}>
             <input
+              id="password-input"
               type="password"
               name="password"
               value={formData.password}
@@ -132,6 +134,7 @@ const LoginPage = () => {
           {/* Forgot Password */}
           <div className={styles.forgotPasswordContainer}>
             <a
+              id="forgot-password-link"
               href="#"
               className={styles.forgotPassword}
               onClick={handleForgotPassword}
@@ -145,6 +148,7 @@ const LoginPage = () => {
           )}
 
           <button
+            id="login-btn"
             type="submit"
             className={styles.submitButton}
             disabled={isLoading}

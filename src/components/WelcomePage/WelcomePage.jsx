@@ -25,6 +25,7 @@ const WelcomePage = () => {
         {/* Action Buttons */}
         <div className={styles.actionsContainer}>
           <button 
+            id="create-account-btn"
             className={`${styles.actionButton} ${styles.createPlannerButton}`}
             onClick={handleCreatePlanner}
           >
@@ -32,6 +33,7 @@ const WelcomePage = () => {
           </button>
           
           <button 
+            id="login-btn"
             className={`${styles.actionButton} ${styles.loginButton}`}
             onClick={handleExistingAccount}
           >
