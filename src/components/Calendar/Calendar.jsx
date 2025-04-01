@@ -2,15 +2,30 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Calendar.css';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchTasks, setTasksByDate } from '../../store/slices/taskSlice';
+import { fetchTasks } from '../../store/slices/taskSlice';
 
+import avatar1 from '../../assets/avatars/avatar1.png';
+import avatar2 from '../../assets/avatars/avatar2.png';
+import avatar3 from '../../assets/avatars/avatar3.png';
+import avatar4 from '../../assets/avatars/avatar4.png';
+import avatar5 from '../../assets/avatars/avatar5.png';
+import avatar6 from '../../assets/avatars/avatar6.png';
+
+const avatarOptions = [
+  { id: 'avatar1', image: avatar1 },
+  { id: 'avatar2', image: avatar2 },
+  { id: 'avatar3', image: avatar3 },
+  { id: 'avatar4', image: avatar4 },
+  { id: 'avatar5', image: avatar5 },
+  { id: 'avatar6', image: avatar6 },
+];
 
 const LogoutButton = () => {
   const navigate = useNavigate();
-  const dispatch = useDispatch();
-
+  
   const handleLogout = () => {
     localStorage.removeItem('userData');
+    localStorage.removeItem('token');
     navigate('/login');
   };
 
@@ -18,17 +33,21 @@ const LogoutButton = () => {
 };
 
 const UserProfile = () => {
-  const [userData, setUserData] = useState({ username: '', age: '', avatar: '' });
+  const [userData, setUserData] = useState({ username: '', age: '', avatarId: '' });
 
   useEffect(() => {
     const data = JSON.parse(localStorage.getItem('userData'));
     if (data) setUserData(data);
   }, []);
 
+  const avatarSrc = userData.avatarId && avatarOptions[userData.avatarId] 
+    ? avatarOptions[userData.avatarId] 
+    : avatar1;
+
   return (
     <div className="user-profile">
       <img 
-        src={userData.avatarId ? `/assets/avatars/${userData.avatarId}.png` : '/avatar.png'} 
+        src={avatarSrc} 
         alt="" 
         className="avatar" 
       />
@@ -52,37 +71,36 @@ function TaskBubble({ name }) {
 const Calendar = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { tasks, tasksByDate, loading, error } = useSelector(state => state.tasks);
+  const { tasksByDate, loading, error } = useSelector(state => state.tasks);
   
   const today = new Date();
   const [currentYear, setYear] = useState(today.getFullYear());
   const [currentMonth, setMonth] = useState(today.getMonth());
 
-  // Загружаем задачи при изменении месяца/года
+  // Завантажуємо задачі при зміні місяця/року
   useEffect(() => {
     const fetchMonthTasks = async () => {
-      // Формируем диапазон дат для текущего месяца
-      const startDate = new Date(currentYear, currentMonth, 1);
-      const endDate = new Date(currentYear, currentMonth + 1, 0);
-      
-      await dispatch(fetchTasks({
-        fromDate: startDate.toISOString(),
-        toDate: endDate.toISOString()
-      }));
-      
-      dispatch(setTasksByDate());
+      try {
+        const startDate = new Date(currentYear, currentMonth, 1);
+        const endDate = new Date(currentYear, currentMonth + 1, 0);
+        
+        await dispatch(fetchTasks({
+          fromDate: startDate.toISOString(),
+          toDate: endDate.toISOString()
+        })).unwrap();
+      } catch (err) {
+        console.error('Failed to fetch tasks:', err);
+      }
     };
     
     fetchMonthTasks();
   }, [currentYear, currentMonth, dispatch]);
 
   const handleTaskClick = (day) => {
-    // Формируем дату для URL
     const paddedMonth = (currentMonth + 1).toString().padStart(2, '0');
     const paddedDay = day.toString().padStart(2, '0');
     const dateStr = `${currentYear}-${paddedMonth}-${paddedDay}`;
     
-    // Сохраняем выбранную дату в localStorage для страницы задач
     localStorage.setItem('selectedDate', dateStr);
     navigate('/completed');
   };
@@ -112,7 +130,6 @@ const Calendar = () => {
     }
   };
 
-
   const handleMonthClick = () => {
     const months = [
       'January', 'February', 'March', 'April', 'May', 'June',
@@ -134,24 +151,21 @@ const Calendar = () => {
     const paddedMonth = (currentMonth + 1).toString().padStart(2, '0');
     const paddedDay = day.toString().padStart(2, '0');
     const key = `${currentYear}-${paddedMonth}-${paddedDay}`;
-    return tasks[key] || [];
+    return tasksByDate[key] || [];
   };
 
-  // Получаем первый день месяца (0 = Воскресенье, 1 = Понедельник и т.д.)
   const getFirstDayOfMonth = () => {
     return new Date(currentYear, currentMonth, 1).getDay();
   };
 
-  // Корректируем для понедельника как первого дня недели
   const getStartingDayOfWeek = () => {
     const firstDay = getFirstDayOfMonth();
-    return firstDay === 0 ? 6 : firstDay - 1; // Преобразуем воскресенье из 0 в 6
+    return firstDay === 0 ? 6 : firstDay - 1;
   };
 
   const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
   const startingDay = getStartingDayOfWeek();
 
-  // Проверяем, является ли дата сегодняшней
   const isToday = (day) => {
     const currentDate = new Date();
     return (
@@ -192,12 +206,10 @@ const Calendar = () => {
           <div className="calendar-loading">Loading calendar...</div>
         ) : (
           <div className="calendar-grid">
-            {/* Пустые ячейки для дней перед первым днем месяца */}
             {[...Array(startingDay)].map((_, index) => (
               <div key={`empty-${index}`} className="calendar-cell empty"></div>
             ))}
             
-            {/* Фактические дни месяца */}
             {[...Array(daysInMonth)].map((_, index) => {
               const day = index + 1;
               const taskList = getTasksForDay(day);

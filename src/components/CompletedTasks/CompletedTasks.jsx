@@ -1,13 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import './Calendar.css';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchTasks, updateTaskStatus } from '../../store/slices/taskSlice';
+import './CompletedTasks.css';
 
 const LogoutButton = () => {
   const navigate = useNavigate();
-  const dispatch = useDispatch();
-
+  
   const handleLogout = () => {
-    dispatch(logout());
+    localStorage.removeItem('userData');
     navigate('/login');
   };
 
@@ -44,13 +45,22 @@ const CompletedTasks = () => {
   
   const [selectedDate, setSelectedDate] = useState('');
 
-  const handleDateClick = () => {
-    const pickedDate = prompt('Enter date (YYYY-MM-DD):');
-    if (pickedDate) setSelectedDate(pickedDate);
-  };
+  // Use useCallback to memoize the fetchTasksForDate function
+  const fetchTasksForDate = useCallback(async (date) => {
+    // Parse date to create start and end of day
+    const [year, month, day] = date.split('-').map(num => parseInt(num));
+    const startDate = new Date(year, month - 1, day);
+    const endDate = new Date(year, month - 1, day, 23, 59, 59);
+    
+    // Load tasks from API
+    await dispatch(fetchTasks({
+      fromDate: startDate.toISOString(),
+      toDate: endDate.toISOString()
+    }));
+  }, [dispatch]);
 
   useEffect(() => {
-    // Получаем выбранную дату из localStorage или используем сегодняшнюю дату
+    // Get selected date from localStorage or use today's date
     const storedDate = localStorage.getItem('selectedDate');
     const today = new Date();
     const formattedToday = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
@@ -59,20 +69,7 @@ const CompletedTasks = () => {
     setSelectedDate(dateToUse);
     
     fetchTasksForDate(dateToUse);
-  }, [dispatch]);
-
-  const fetchTasksForDate = async (date) => {
-    // Разбираем дату для создания начальной и конечной даты дня
-    const [year, month, day] = date.split('-').map(num => parseInt(num));
-    const startDate = new Date(year, month - 1, day);
-    const endDate = new Date(year, month - 1, day, 23, 59, 59);
-    
-    // Загружаем задачи из API
-    await dispatch(fetchTasks({
-      fromDate: startDate.toISOString(),
-      toDate: endDate.toISOString()
-    }));
-  };
+  }, [fetchTasksForDate]); // Now we properly include fetchTasksForDate in dependencies
 
   const handleDateClick = () => {
     const pickedDate = prompt('Enter date (YYYY-MM-DD):', selectedDate);
@@ -92,7 +89,8 @@ const CompletedTasks = () => {
         month: 'long', 
         day: 'numeric' 
       });
-    } catch (e) {
+    } catch {
+      // Empty catch block - we're just falling back to the original string
       return dateString;
     }
   };
@@ -109,8 +107,8 @@ const CompletedTasks = () => {
   return (
     <div className="completed-page">
       <div className="top-header">
-        <LogoutButton />
         <UserProfile />
+        <LogoutButton />
       </div>
 
       <button className="date-title" onClick={handleDateClick}>

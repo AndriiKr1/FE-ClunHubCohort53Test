@@ -1,4 +1,3 @@
-
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 
@@ -11,9 +10,21 @@ axios.interceptors.request.use(
       return config;
     },
     (error) => Promise.reject(error)
-  );
+);
 
-// Асинхронные операции
+// Додаємо обробку 401 статусу
+axios.interceptors.response.use(
+    response => response,
+    error => {
+        if (error.response?.status === 401) {
+            localStorage.removeItem('token');
+            window.location.href = '/login';
+        }
+        return Promise.reject(error);
+    }
+);
+
+// Асинхронні операції
 export const fetchTasks = createAsyncThunk(
   "tasks/fetchTasks",
   async (params, { rejectWithValue }) => {
@@ -62,7 +73,7 @@ export const updateTaskStatus = createAsyncThunk(
   }
 );
 
-// Начальное состояние
+// Початковий стан
 const initialState = {
   tasks: [],
   tasksByDate: {},
@@ -74,35 +85,18 @@ const initialState = {
   page: 0
 };
 
-// Создаем slice
+// Створюємо slice
 const taskSlice = createSlice({
   name: "tasks",
   initialState,
   reducers: {
     clearTaskError: (state) => {
       state.error = null;
-    },
-    setTasksByDate: (state, action) => {
-      // Преобразуем задачи по датам для удобного отображения в календаре
-      const tasksByDate = {};
-      state.tasks.forEach(task => {
-        if (task.dueDate) {
-          const date = new Date(task.dueDate);
-          const dateKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-          
-          if (!tasksByDate[dateKey]) {
-            tasksByDate[dateKey] = [];
-          }
-          
-          tasksByDate[dateKey].push(task);
-        }
-      });
-      state.tasksByDate = tasksByDate;
     }
   },
   extraReducers: (builder) => {
     builder
-      // Обработка fetchTasks
+      // Обробка fetchTasks
       .addCase(fetchTasks.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -113,13 +107,23 @@ const taskSlice = createSlice({
         state.totalElements = action.payload.totalElements || 0;
         state.totalPages = action.payload.totalPages || 0;
         state.page = action.payload.number || 0;
+        // Оновлюємо tasksByDate автоматично
+        state.tasksByDate = state.tasks.reduce((acc, task) => {
+          if (task.dueDate) {
+            const date = new Date(task.dueDate);
+            const dateKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+            acc[dateKey] = acc[dateKey] || [];
+            acc[dateKey].push(task);
+          }
+          return acc;
+        }, {});
       })
       .addCase(fetchTasks.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload || "Failed to fetch tasks";
       })
       
-      // Обработка fetchTaskById
+      // Обробка fetchTaskById
       .addCase(fetchTaskById.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -133,7 +137,7 @@ const taskSlice = createSlice({
         state.error = action.payload || "Failed to fetch task details";
       })
       
-      // Обработка createTask
+      // Обробка createTask
       .addCase(createTask.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -141,28 +145,43 @@ const taskSlice = createSlice({
       .addCase(createTask.fulfilled, (state, action) => {
         state.loading = false;
         state.tasks.push(action.payload);
+        // Оновлюємо tasksByDate при додаванні нової задачі
+        if (action.payload.dueDate) {
+          const date = new Date(action.payload.dueDate);
+          const dateKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+          state.tasksByDate[dateKey] = state.tasksByDate[dateKey] || [];
+          state.tasksByDate[dateKey].push(action.payload);
+        }
       })
       .addCase(createTask.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload || "Failed to create task";
       })
       
-      // Обработка updateTaskStatus
+      // Обробка updateTaskStatus
       .addCase(updateTaskStatus.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
       .addCase(updateTaskStatus.fulfilled, (state, action) => {
         state.loading = false;
-        // Обновляем задачу в списке
         const updatedTask = action.payload;
         const index = state.tasks.findIndex(task => task.id === updatedTask.id);
         if (index !== -1) {
           state.tasks[index] = updatedTask;
         }
-        // Обновляем текущую задачу если она открыта
         if (state.currentTask && state.currentTask.id === updatedTask.id) {
           state.currentTask = updatedTask;
+        }
+        // Оновлюємо tasksByDate
+        if (updatedTask.dueDate) {
+          const date = new Date(updatedTask.dueDate);
+          const dateKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+          state.tasksByDate[dateKey] = state.tasksByDate[dateKey] || [];
+          const taskIndex = state.tasksByDate[dateKey].findIndex(t => t.id === updatedTask.id);
+          if (taskIndex !== -1) {
+            state.tasksByDate[dateKey][taskIndex] = updatedTask;
+          }
         }
       })
       .addCase(updateTaskStatus.rejected, (state, action) => {
@@ -172,5 +191,5 @@ const taskSlice = createSlice({
   }
 });
 
-export const { clearTaskError, setTasksByDate } = taskSlice.actions;
+export const { clearTaskError } = taskSlice.actions;
 export default taskSlice.reducer;
