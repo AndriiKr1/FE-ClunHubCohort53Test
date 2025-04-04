@@ -1,7 +1,7 @@
-
-import React, { useState } from 'react';
-import { useSelector } from 'react-redux';
+import React  from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
+import { logout } from '../../store/slices/authSlice';
 import styles from './ProfileHeader.module.css';
 
 import avatar1 from '../../assets/avatars/avatar1.png';
@@ -20,21 +20,29 @@ const avatarMap = {
   avatar6,
 };
 
-const ProfileHeader = ({ onLogout }) => {
-  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+const ProfileHeader = () => {
+  
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const user = useSelector((state) => state.auth.user) || {};
   const { username, age, avatarId } = user;
 
   const selectedAvatar = avatarMap[avatarId] || avatar1;
+  
 
+
+  const handleLogout = () => {
+    dispatch(logout());
+    localStorage.removeItem('token');
+    navigate('/login');
+  };
 
   return (
     <div className={styles.profileHeader}>
   {username && (
     <>
-      <button className={styles.logoutButton} onClick={onLogout}>
+      <button className={styles.logoutButton} onClick={handleLogout}>
         Log out
       </button>
       <img src={selectedAvatar} alt="Avatar" className={styles.avatar} />

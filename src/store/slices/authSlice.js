@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import axios from "axios";
+import axios from '../../utils/axiosConfig';
 
 
 
@@ -78,10 +78,10 @@ export const resetPassword = createAsyncThunk(
         newPassword: data.newPassword,
         confirmPassword: data.confirmPassword
       });
-      console.log("Reset password response:", response.data);
+      
       return response.data;
     } catch (error) {
-      console.error("Reset password error:", error.response?.data || error.message);
+     
       return rejectWithValue(error.response?.data || "Failed to reset password");
     }
   }

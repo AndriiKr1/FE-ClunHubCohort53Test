@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchTasks, updateTaskStatus } from '../../store/slices/taskSlice';
+import { formatDateForApi } from '../../utils/dataMappers';
 import ProfileHeader from '../ProfileHeader/ProfileHeader';
 import leftArrow from '../../assets/images/left.png';
 import './CompletedTasks.css';
@@ -16,23 +17,13 @@ const CompletedTasks = () => {
   // Use useCallback to memoize the fetchTasksForDate function
   const fetchTasksForDate = useCallback(async (date) => {
     try {
-      // Parse date to create start and end of day
-      const [year, month, day] = date.split('-').map(num => parseInt(num));
-      if (isNaN(year) || isNaN(month) || isNaN(day)) {
-        throw new Error('Invalid date format');
-      }
+      // Parse date to create formatted date for API
+      const formattedDate = formatDateForApi(date);
       
-      const startDate = new Date(year, month - 1, day);
-      const endDate = new Date(year, month - 1, day, 23, 59, 59);
-      
-      // Format dates as ISO strings
-      const fromDate = startDate.toISOString().split('T')[0];
-      const toDate = endDate.toISOString().split('T')[0];
-      
-      // Load tasks from the store
+      // Load tasks from the store using the same date for both start and end
       await dispatch(fetchTasks({
-        fromDate,
-        toDate
+        fromDate: formattedDate,
+        toDate: formattedDate
       }));
     } catch (error) {
       console.error('Error fetching tasks for date:', error);
@@ -49,15 +40,15 @@ const CompletedTasks = () => {
     setSelectedDate(dateToUse);
     
     fetchTasksForDate(dateToUse);
-  }, [fetchTasksForDate]); // Now we properly include fetchTasksForDate in dependencies
-
-  const handleDateClick = () => {
+  }, [fetchTasksForDate]); 
+  
+  /*const handleDateClick = () => {
     const pickedDate = prompt('Enter date (YYYY-MM-DD):', selectedDate);
     if (pickedDate && /^\d{4}-\d{2}-\d{2}$/.test(pickedDate)) {
       setSelectedDate(pickedDate);
       fetchTasksForDate(pickedDate);
     }
-  };
+  };*/
 
   const formatDate = (dateString) => {
     try {
@@ -91,9 +82,9 @@ const CompletedTasks = () => {
     }
   };
 
-  const handleBackClick = () => {
-    navigate('/calendar');
-  };
+  //const handleBackClick = () => {
+   // navigate('/calendar');
+  //};
 
   return (
     <div className="completed-page">
