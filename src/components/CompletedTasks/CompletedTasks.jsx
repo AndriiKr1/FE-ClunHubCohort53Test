@@ -2,41 +2,9 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchTasks, updateTaskStatus } from '../../store/slices/taskSlice';
+import ProfileHeader from '../ProfileHeader/ProfileHeader';
+import leftArrow from '../../assets/images/left.png';
 import './CompletedTasks.css';
-
-const LogoutButton = () => {
-  const navigate = useNavigate();
-  
-  const handleLogout = () => {
-    localStorage.removeItem('userData');
-    navigate('/login');
-  };
-
-  return <button className="logout-button" onClick={handleLogout}>Log out</button>;
-};
-
-const UserProfile = () => {
-  const [userData, setUserData] = useState({ username: '', age: '', avatar: '' });
-
-  useEffect(() => {
-    const data = JSON.parse(localStorage.getItem('userData'));
-    if (data) setUserData(data);
-  }, []);
-
-  return (
-    <div className="user-profile">
-      <img 
-        src={userData.avatarId ? `/assets/avatars/${userData.avatarId}.png` : '/avatar.png'} 
-        alt="" 
-        className="avatar" 
-      />
-      <div className="user-info">
-        <div className="username-field">{userData.username || 'Username'}</div>
-        <div className="age-field">{userData.age || 'Age'}</div>
-      </div>
-    </div>
-  );
-};
 
 const CompletedTasks = () => {
   const navigate = useNavigate();
@@ -47,16 +15,28 @@ const CompletedTasks = () => {
 
   // Use useCallback to memoize the fetchTasksForDate function
   const fetchTasksForDate = useCallback(async (date) => {
-    // Parse date to create start and end of day
-    const [year, month, day] = date.split('-').map(num => parseInt(num));
-    const startDate = new Date(year, month - 1, day);
-    const endDate = new Date(year, month - 1, day, 23, 59, 59);
-    
-    // Load tasks from API
-    await dispatch(fetchTasks({
-      fromDate: startDate.toISOString(),
-      toDate: endDate.toISOString()
-    }));
+    try {
+      // Parse date to create start and end of day
+      const [year, month, day] = date.split('-').map(num => parseInt(num));
+      if (isNaN(year) || isNaN(month) || isNaN(day)) {
+        throw new Error('Invalid date format');
+      }
+      
+      const startDate = new Date(year, month - 1, day);
+      const endDate = new Date(year, month - 1, day, 23, 59, 59);
+      
+      // Format dates as ISO strings
+      const fromDate = startDate.toISOString().split('T')[0];
+      const toDate = endDate.toISOString().split('T')[0];
+      
+      // Load tasks from the store
+      await dispatch(fetchTasks({
+        fromDate,
+        toDate
+      }));
+    } catch (error) {
+      console.error('Error fetching tasks for date:', error);
+    }
   }, [dispatch]);
 
   useEffect(() => {
@@ -96,8 +76,19 @@ const CompletedTasks = () => {
   };
 
   const toggleTaskCompletion = async (taskId, completed) => {
-    const newStatus = completed ? 'IN_PROGRESS' : 'COMPLETED';
-    dispatch(updateTaskStatus({ id: taskId, status: newStatus }));
+    try {
+      // Determine the new status based on current completion state
+      const newStatus = completed ? 'IN_PROGRESS' : 'COMPLETED';
+      
+      // Dispatch the update action
+      await dispatch(updateTaskStatus({ 
+        id: taskId, 
+        status: newStatus 
+      })).unwrap();
+      
+    } catch (error) {
+      console.error('Error toggling task completion:', error);
+    }
   };
 
   const handleBackClick = () => {
@@ -107,13 +98,12 @@ const CompletedTasks = () => {
   return (
     <div className="completed-page">
       <div className="top-header">
-        <UserProfile />
-        <LogoutButton />
+        <ProfileHeader />
       </div>
 
-      <button className="date-title" onClick={handleDateClick}>
+      <div className="date-label-display">
         {formatDate(selectedDate)}
-      </button>
+      </div>
 
       {error && <div className="error-message">{error}</div>}
 
@@ -128,7 +118,7 @@ const CompletedTasks = () => {
               onClick={() => toggleTaskCompletion(task.id, task.completed)}
             >
               <span className="task-status-indicator"></span>
-              {task.title}
+              {task.title || task.name || 'Untitled Task'}
               {task.description && (
                 <div className="task-description">{task.description}</div>
               )}
@@ -140,9 +130,14 @@ const CompletedTasks = () => {
       </div>
 
       <div className="back-section">
-        <button className="back-button" onClick={handleBackClick}>←</button>
-        <p className="footer-title">family planner</p>
-      </div>
+              <img
+                src={leftArrow}
+                alt="back"
+                className="back-arrow-img"
+                onClick={() => navigate('/calendar')}
+              />
+              <p className="footer-title">family planner</p>
+            </div>
     </div>
   );
 };

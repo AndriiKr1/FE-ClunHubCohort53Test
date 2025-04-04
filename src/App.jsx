@@ -6,6 +6,9 @@ import LoginPage from './components/Login/LoginPage';
 import ForgotPasswordPage from './components/ForgotPassword/ForgotPasswordPage';
 import Dashboard from './components/Dashboard/Dashboard';
 import AddTask from './components/AddTask/AddTask';
+import Calendar from './components/Calendar/Calendar';
+import CompletedTasks from './components/CompletedTasks/CompletedTasks';
+
 
 
 function App() {
@@ -18,7 +21,8 @@ function App() {
         <Route path="/forgot-password" element={<ForgotPasswordPage />} /> 
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/addtask" element={<AddTask />} />
-
+        <Route path="/calendar" element={<Calendar />} />
+        <Route path="/completed" element={<CompletedTasks />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>

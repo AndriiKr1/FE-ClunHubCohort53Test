@@ -1,5 +1,7 @@
-import React from 'react';
+
+import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import styles from './ProfileHeader.module.css';
 
 import avatar1 from '../../assets/avatars/avatar1.png';
@@ -19,10 +21,14 @@ const avatarMap = {
 };
 
 const ProfileHeader = ({ onLogout }) => {
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const navigate = useNavigate();
+
   const user = useSelector((state) => state.auth.user) || {};
   const { username, age, avatarId } = user;
 
   const selectedAvatar = avatarMap[avatarId] || avatar1;
+
 
   return (
     <div className={styles.profileHeader}>
