@@ -96,9 +96,8 @@ const AddTask = () => {
   };
   const handleOk = () => {
     setShowSuccess(false);
-    navigate("/dashboard", { state: { shouldRefresh: true } });
+    navigate("/dashboard", { state: { shouldRefresh: Date.now() } });
   };
-
   const today = new Date().toISOString().split("T")[0];
 
   return (

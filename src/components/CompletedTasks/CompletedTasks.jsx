@@ -11,44 +11,29 @@ const CompletedTasks = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { tasks, loading, error } = useSelector(state => state.tasks);
-  
   const [selectedDate, setSelectedDate] = useState('');
 
-  // Use useCallback to memoize the fetchTasksForDate function
   const fetchTasksForDate = useCallback(async (date) => {
     try {
-      // Parse date to create formatted date for API
-      const formattedDate = formatDateForApi(date);
-      
-      // Load tasks from the store using the same date for both start and end
       await dispatch(fetchTasks({
-        fromDate: formattedDate,
-        toDate: formattedDate
+        fromDate: date,
+        toDate: date,
+        includeCompleted: true
       }));
     } catch (error) {
-      console.error('Error fetching tasks for date:', error);
+      console.error('Error fetching tasks:', error);
     }
   }, [dispatch]);
 
   useEffect(() => {
-    // Get selected date from localStorage or use today's date
     const storedDate = localStorage.getItem('selectedDate');
     const today = new Date();
-    const formattedToday = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+    const formattedToday = formatDateForApi(today);
     
     const dateToUse = storedDate || formattedToday;
     setSelectedDate(dateToUse);
-    
     fetchTasksForDate(dateToUse);
-  }, [fetchTasksForDate]); 
-  
-  /*const handleDateClick = () => {
-    const pickedDate = prompt('Enter date (YYYY-MM-DD):', selectedDate);
-    if (pickedDate && /^\d{4}-\d{2}-\d{2}$/.test(pickedDate)) {
-      setSelectedDate(pickedDate);
-      fetchTasksForDate(pickedDate);
-    }
-  };*/
+  }, [fetchTasksForDate]);
 
   const formatDate = (dateString) => {
     try {
@@ -61,30 +46,29 @@ const CompletedTasks = () => {
         day: 'numeric' 
       });
     } catch {
-      // Empty catch block - we're just falling back to the original string
       return dateString;
     }
   };
 
   const toggleTaskCompletion = async (taskId, completed) => {
     try {
-      // Determine the new status based on current completion state
+      console.log('Toggling task completion:', taskId, completed);
       const newStatus = completed ? 'IN_PROGRESS' : 'COMPLETED';
       
-      // Dispatch the update action
       await dispatch(updateTaskStatus({ 
         id: taskId, 
         status: newStatus 
       })).unwrap();
       
+      // Refresh tasks after status update
+      await fetchTasksForDate(selectedDate);
     } catch (error) {
       console.error('Error toggling task completion:', error);
     }
   };
 
-  //const handleBackClick = () => {
-   // navigate('/calendar');
-  //};
+  // Filter only completed tasks
+  const completedTasks = tasks.filter(task => task.status === 'COMPLETED');
 
   return (
     <div className="completed-page">
@@ -101,12 +85,12 @@ const CompletedTasks = () => {
       <div className="task-list">
         {loading ? (
           <div className="loading">Loading tasks...</div>
-        ) : tasks.length > 0 ? (
-          tasks.map((task) => (
+        ) : completedTasks.length > 0 ? (
+          completedTasks.map((task) => (
             <div 
-              className={`task-card ${task.completed ? 'completed' : 'pending'}`} 
+              className="task-card completed" 
               key={task.id}
-              onClick={() => toggleTaskCompletion(task.id, task.completed)}
+              onClick={() => toggleTaskCompletion(task.id, true)}
             >
               <span className="task-status-indicator"></span>
               {task.title || task.name || 'Untitled Task'}
@@ -116,19 +100,19 @@ const CompletedTasks = () => {
             </div>
           ))
         ) : (
-          <div className="no-tasks">No tasks for this date</div>
+          <div className="no-tasks">No completed tasks for this date</div>
         )}
       </div>
 
       <div className="back-section">
-              <img
-                src={leftArrow}
-                alt="back"
-                className="back-arrow-img"
-                onClick={() => navigate('/calendar')}
-              />
-              <p className="footer-title">family planner</p>
-            </div>
+        <img
+          src={leftArrow}
+          alt="back"
+          className="back-arrow-img"
+          onClick={() => navigate('/calendar')}
+        />
+        <p className="footer-title">family planner</p>
+      </div>
     </div>
   );
 };

@@ -2,9 +2,9 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import {
+  deleteTask,
   fetchTasks,
   updateTaskStatus,
-  deleteTask,
 } from "../../store/slices/taskSlice";
 import styles from "./Dashboard.module.css";
 import ProfileHeader from "../ProfileHeader/ProfileHeader";
@@ -18,25 +18,41 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const dispatch = useDispatch();
-  const { tasks, loading, error } = useSelector((state) => state.tasks);
+  const { tasks } = useSelector((state) => state.tasks);
   const [selectedTask, setSelectedTask] = useState(null);
   const [confirmationTask, setConfirmationTask] = useState(null);
   const [deleteConfirmationTask, setDeleteConfirmationTask] = useState(null);
   const [currentPage, setCurrentPage] = useState(0);
 
+  // Fetch tasks on component mount and when shouldRefresh changes
   useEffect(() => {
-    dispatch(fetchTasks());
-    setCurrentPage(0);
+    dispatch(
+      fetchTasks({
+        includeCompleted: false, // Only fetch active tasks
+      })
+    );
   }, [dispatch, location.state?.shouldRefresh]);
+
+  // Filter out completed tasks
+  const activeTasks = tasks.filter((task) => task.status !== "COMPLETED");
 
   const handleCompleteTask = async (taskId) => {
     try {
+      console.log("Completing task:", taskId);
+
       await dispatch(
         updateTaskStatus({
           id: taskId,
           status: "COMPLETED",
         })
       ).unwrap();
+
+      await dispatch(
+        fetchTasks({
+          includeCompleted: false,
+        })
+      );
+
       setConfirmationTask(null);
     } catch (error) {
       console.error("Error completing task:", error);
@@ -52,6 +68,15 @@ const Dashboard = () => {
     }
   };
 
+  const TASKS_PER_PAGE = 3;
+  const totalPages = Math.ceil(activeTasks.length / TASKS_PER_PAGE);
+  const startIndex = currentPage * TASKS_PER_PAGE;
+
+  const visibleTasks = activeTasks.slice(
+    startIndex,
+    startIndex + TASKS_PER_PAGE
+  );
+
   const handleEditTask = (task) => {
     navigate("/addtask", {
       state: {
@@ -60,14 +85,6 @@ const Dashboard = () => {
       },
     });
   };
-
-  const TASKS_PER_PAGE = 3;
-  const totalPages = Math.ceil(tasks.length / TASKS_PER_PAGE);
-  const startIndex = currentPage * TASKS_PER_PAGE;
-
-  const visibleTasks = [...tasks]
-    .reverse()
-    .slice(startIndex, startIndex + TASKS_PER_PAGE);
 
   const goToNextPage = () => {
     if (currentPage < totalPages - 1) {
@@ -93,6 +110,7 @@ const Dashboard = () => {
   return (
     <div className={styles.dashboardContainer}>
       <ProfileHeader />
+
       <button
         className={styles.addTaskButton}
         onClick={() => navigate("/addtask")}
@@ -100,87 +118,72 @@ const Dashboard = () => {
         Add new task
       </button>
 
-      {loading ? (
-        <div className={styles.loading}>Loading tasks...</div>
-      ) : (
-        <>
-         {error && (
-  <div className={styles.errorMessage}>
-    {typeof error === 'object' 
-      ? (error.message || JSON.stringify(error)) 
-      : error}
-  </div>
-)}
-
-          {tasks.length > TASKS_PER_PAGE && (
-            <button
-              className={`${styles.arrowButton} ${styles.arrowButtonTop}`}
-              onClick={goToPrevPage}
-              disabled={currentPage === 0}
-            >
-              <img
-                src={arrowUpIcon}
-                alt="Show previous tasks"
-                className={styles.arrowIcon}
-              />
-            </button>
-          )}
-
-          <div className={styles.taskList}>
-            {visibleTasks.map((task) => (
-              <div key={task.id} className={styles.taskRow}>
-                <div
-                  className={`${styles.taskButton} ${styles.taskText}`}
-                  onClick={() => handleEditTask(task)}
-                >
-                  {task.name}
-                </div>
-                <div className={styles.taskIcons}>
-                  <img
-                    src={eyesIcon}
-                    alt="view"
-                    className={styles.icon}
-                    onClick={() => setSelectedTask(task)}
-                  />
-                  <img
-                    src={checkmarkIcon}
-                    alt="complete"
-                    className={styles.icon}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setConfirmationTask(task);
-                    }}
-                  />
-                  <img
-                    src={cancelIcon}
-                    alt="delete"
-                    className={styles.icon}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setDeleteConfirmationTask(task);
-                    }}
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {tasks.length > TASKS_PER_PAGE && (
-            <button
-              className={`${styles.arrowButton} ${styles.arrowButtonBottom}`}
-              onClick={goToNextPage}
-              disabled={currentPage >= totalPages - 1}
-            >
-              <img
-                src={arrowDownIcon}
-                alt="Show next tasks"
-                className={styles.arrowIcon}
-              />
-            </button>
-          )}
-        </>
+      {tasks.length > TASKS_PER_PAGE && (
+        <button
+          className={`${styles.arrowButton} ${styles.arrowButtonTop}`}
+          onClick={goToPrevPage}
+          disabled={currentPage === 0}
+        >
+          <img
+            src={arrowUpIcon}
+            alt="Show previous tasks"
+            className={styles.arrowIcon}
+          />
+        </button>
       )}
-  
+
+      <div className={styles.taskList}>
+        {visibleTasks.map((task) => (
+          <div key={task.id} className={styles.taskRow}>
+            <div
+              className={`${styles.taskButton} ${styles.taskText}`}
+              onClick={() => handleEditTask(task)}
+            >
+              {task.name}
+            </div>
+            <div className={styles.taskIcons}>
+              <img
+                src={eyesIcon}
+                alt="view"
+                className={styles.icon}
+                onClick={() => setSelectedTask(task)}
+              />
+              <img
+                src={checkmarkIcon}
+                alt="complete"
+                className={styles.icon}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setConfirmationTask(task);
+                }}
+              />
+              <img
+                src={cancelIcon}
+                alt="delete"
+                className={styles.icon}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setDeleteConfirmationTask(task);
+                }}
+              />
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {tasks.length > TASKS_PER_PAGE && (
+        <button
+          className={`${styles.arrowButton} ${styles.arrowButtonBottom}`}
+          onClick={goToNextPage}
+          disabled={currentPage >= totalPages - 1}
+        >
+          <img
+            src={arrowDownIcon}
+            alt="Show next tasks"
+            className={styles.arrowIcon}
+          />
+        </button>
+      )}
       <button className={styles.completedButton} onClick={goToCompletedTasks}>
         Completed tasks
       </button>

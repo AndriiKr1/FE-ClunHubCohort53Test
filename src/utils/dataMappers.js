@@ -5,6 +5,7 @@ export function mapTaskFromBackend(backendTask) {
       name: backendTask.title,
       description: backendTask.description,
       deadline: backendTask.dueDate,
+      status: backendTask.status,
       completed: backendTask.status === 'COMPLETED',
       createdAt: backendTask.createdAt
     };
