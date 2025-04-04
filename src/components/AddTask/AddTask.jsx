@@ -35,42 +35,65 @@ const AddTask = () => {
 
   const handleBack = () => navigate('/dashboard');
     
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        
-        const newErrors = {
-            taskName: !taskName.trim() ? 'Please enter task name' : '',
-            deadline: !deadline ? 'Please select deadline' : ''
-        };
-        
-        setErrors(newErrors);
-        
-        if (newErrors.taskName || newErrors.deadline) return;
-        
-        try {
-            if (isEditing && taskToEdit) {
-                await dispatch(updateTask({
-                    taskId: taskToEdit.id,
-                    taskData: {
-                        name: taskName,
-                        description,
-                        deadline
-                    },
-                    email: user.email
-                })).unwrap();
-            } else {
-                await dispatch(createTask({
-                    name: taskName,
-                    description,
-                    deadline
-                })).unwrap();
-            }
-            setShowSuccess(true);
-        } catch (error) {
-            console.error('Error saving task:', error);
-        }
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+   
+    const newErrors = {
+      taskName: '',
+      deadline: ''
     };
-
+    
+    if (!taskName.trim()) {
+      newErrors.taskName = 'Please enter task name';
+    } else if (taskName.length < 10) {
+      newErrors.taskName = 'Task name must be at least 10 characters long';
+    } else if (taskName.length > 30) {
+      newErrors.taskName = 'Task name cannot exceed 30 characters';
+    }
+    
+    if (!deadline) {
+      newErrors.deadline = 'Please select deadline';
+    }
+    
+    // If description is too long
+    if (description && description.length > 100) {
+      newErrors.description = 'Description cannot exceed 100 characters';
+    }
+    
+    setErrors(newErrors);
+    
+    // Check if there are any errors
+    if (newErrors.taskName || newErrors.deadline || newErrors.description) {
+      return;
+    }
+    
+    try {
+      if (isEditing && taskToEdit) {
+        await dispatch(updateTask({
+          taskId: taskToEdit.id,
+          taskData: {
+            name: taskName,
+            description,
+            deadline
+          },
+          email: user.email
+        })).unwrap();
+      } else {
+        await dispatch(createTask({
+          name: taskName,
+          description,
+          deadline
+        })).unwrap();
+      }
+      setShowSuccess(true);
+    } catch (error) {
+      console.error('Error saving task:', error);
+      setErrors({
+        submit: error
+      });
+    }
+  };
   const handleOk = () => {
     setShowSuccess(false);
     navigate("/dashboard", { state: { shouldRefresh: true } });

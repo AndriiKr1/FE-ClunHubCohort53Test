@@ -26,6 +26,7 @@ const Dashboard = () => {
 
   useEffect(() => {
     dispatch(fetchTasks());
+    setCurrentPage(0);
   }, [dispatch, location.state?.shouldRefresh]);
 
   const handleCompleteTask = async (taskId) => {
@@ -179,14 +180,7 @@ const Dashboard = () => {
           )}
         </>
       )}
-      {/* <button 
-        className={styles.completedButton} 
-        onClick={() => navigate('/calendar')}
-      >
-
-        Calendar
-      </button> */}
-
+  
       <button className={styles.completedButton} onClick={goToCompletedTasks}>
         Completed tasks
       </button>

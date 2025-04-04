@@ -25,9 +25,12 @@ const ProfileHeader = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  const user = useSelector((state) => state.auth.user) || {};
-  const { username, age, avatarId } = user;
-
+  const user = useSelector((state) => state.auth.user);
+  
+  
+  const username = user?.username || '';
+  const age = user?.age || '';
+  const avatarId = user?.avatarId || 'avatar1';
   const selectedAvatar = avatarMap[avatarId] || avatar1;
   
 
@@ -39,21 +42,29 @@ const ProfileHeader = () => {
   };
 
   return (
-    <div className={styles.profileHeader}>
-  {username && (
-    <>
-      <button className={styles.logoutButton} onClick={handleLogout}>
-        Log out
-      </button>
-      <img src={selectedAvatar} alt="Avatar" className={styles.avatar} />
-      <div className={styles.userInfo}>
-        <div className={styles.inputDisabled}>{username}</div>
-        <div className={styles.inputDisabled}>{age}</div>
-      </div>
-    </>
-  )}
-</div>
-
+<div className={styles.profileHeader}>
+      {user ? (
+        <>
+          <button className={styles.logoutButton} onClick={handleLogout}>
+            Log out
+          </button>
+          <img src={selectedAvatar} alt="Avatar" className={styles.avatar} />
+          <div className={styles.userInfo}>
+            <div className={styles.inputDisabled}>{username}</div>
+            <div className={styles.inputDisabled}>{age}</div>
+          </div>
+        </>
+      ) : (
+        <div className={styles.noUserInfo}>
+          <button 
+            className={styles.loginButton}
+            onClick={() => navigate('/login')}
+          >
+            Log in
+          </button>
+        </div>
+      )}
+    </div>
   );
 };
 

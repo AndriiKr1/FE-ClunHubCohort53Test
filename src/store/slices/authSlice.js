@@ -86,9 +86,26 @@ export const resetPassword = createAsyncThunk(
     }
   }
 );
+
+const loadUserFromStorage = () => {
+  try {
+    const storedUser = localStorage.getItem("user");
+    const storedToken = localStorage.getItem("token");
+    
+    return {
+      user: storedUser ? JSON.parse(storedUser) : null,
+      token: storedToken || null
+    };
+  } catch (error) {
+    console.error("Failed to load user data from localStorage:", error);
+    return { user: null, token: null };
+  }
+};
+
+const savedState = loadUserFromStorage();
 const initialState = {
-  user: null,
-  token: null,
+  user: savedState.user,
+  token: savedState.token,
   isLoading: false,
   error: null,
   passwordReset: {
@@ -133,6 +150,7 @@ const authSlice = createSlice({
         state.user = action.payload.user;
         state.token = action.payload.token;
         localStorage.setItem("token", action.payload.token);
+        localStorage.setItem("user", JSON.stringify(action.payload.user));
       })
       .addCase(registerUser.rejected, (state, action) => {
         state.isLoading = false;
@@ -148,6 +166,8 @@ const authSlice = createSlice({
         state.user = action.payload.user;
         state.token = action.payload.token;
         localStorage.setItem("token", action.payload.token);
+        localStorage.setItem("token", action.payload.token);
+        localStorage.setItem("user", JSON.stringify(action.payload.user));
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.isLoading = false;

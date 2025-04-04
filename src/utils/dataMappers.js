@@ -26,5 +26,6 @@ export function mapTaskFromBackend(backendTask) {
     if (isNaN(date.getTime())) {
       throw new Error('Invalid date');
     }
+    // Format as YYYY-MM-DD for backend's LocalDate
     return date.toISOString().split('T')[0];
   }
