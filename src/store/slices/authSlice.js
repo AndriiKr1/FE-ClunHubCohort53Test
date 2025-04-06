@@ -57,11 +57,25 @@ export const requestPasswordReset = createAsyncThunk(
       return response.data;
     } catch (error) {
       if (error.response) {
-        return rejectWithValue(
-          error.response.data.message || "Failed to request password reset"
-        );
-      } else {
+        // Handle specific error scenarios
+        switch (error.response.status) {
+          case 404:
+            // User not found
+            return rejectWithValue("User is not registered");
+          case 400:
+            // Invalid email format
+            return rejectWithValue("Please enter a valid email address");
+          default:
+            return rejectWithValue(
+              error.response.data.message || "Failed to request password reset"
+            );
+        }
+      } else if (error.request) {
+        // No response received
         return rejectWithValue("Network error. Please try again later.");
+      } else {
+        // Other errors
+        return rejectWithValue("An unexpected error occurred");
       }
     }
   }

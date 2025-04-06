@@ -143,15 +143,31 @@ const ForgotPasswordPage = () => {
     setError("");
 
     if (step === "email") {
+      // Валідація email
       if (!email.trim()) {
         setError("Please enter an email address");
         return;
       }
+
+      // Email validation regex
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email.trim())) {
+        setError("Please enter a valid email address");
+        return;
+      }
+
       try {
         await dispatch(requestPasswordReset(email)).unwrap();
         setStep("code");
       } catch (error) {
-        setError(error.message || "Failed to send reset code");
+        // Специфічна обробка помилок
+        if (error === "User is not registered") {
+          setError("This email is not registered in our system");
+        } else if (error === "Invalid email format") {
+          setError("Please enter a valid email address");
+        } else {
+          setError(error || "Failed to send reset code");
+        }
       }
     } else if (step === "code") {
       if (code.length !== 6) {
@@ -191,7 +207,7 @@ const ForgotPasswordPage = () => {
           <img src={clanHubLogo} alt="ClanHub Logo" className={styles.logo} />
         </div>
         <h2 className={styles.title}>
-          {step === "email" ? "Recover password" : step === "code" ? "Enter the code from the link" : "Create a new password"}
+          {step === "email" ? "Recover password" : step === "code" ? "Enter the code from the email" : "Create a new password"}
         </h2>
         <form className={styles.form} onSubmit={handleSubmit} noValidate>
           {step === "email" && (
@@ -251,7 +267,7 @@ const ForgotPasswordPage = () => {
                     className={styles.resendButton}
                     disabled={isSubmitting}
                   >
-                    {isSubmitting ? "Sending..." : "Send a new link"}
+                    {isSubmitting ? "Sending..." : "Send a new code"}
                   </button>
                 )}
               </div>
@@ -289,7 +305,7 @@ const ForgotPasswordPage = () => {
           <button 
           id="submit-btn" 
           type="submit" className={styles.submitButton} disabled={isSubmitting }>
-            {isSubmitting ? "Submitting..." : step === "email" ? "Send reset link" : "Next"}
+            {isSubmitting ? "Submitting..." : step === "email" ? "Send reset code" : "Next"}
            
           </button>
         </form>

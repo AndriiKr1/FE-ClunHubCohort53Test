@@ -1,3 +1,4 @@
+
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "../../utils/axiosConfig";
 import { formatDateForApi } from "../../utils/dataMappers";
@@ -13,13 +14,13 @@ const sortTasksByDate = (tasks) => {
 const organizeTasksByDate = (tasks) => {
   return tasks.reduce((acc, task) => {
     let dateKey;
-    
-    if (task.status === 'COMPLETED' && task.completionDate) {
-      // Для выполненных задач используем дату выполнения
-      dateKey = task.completionDate.split("T")[0];
-    } else {
-      // Для остальных задач используем дедлайн
-      dateKey = task.deadline ? task.deadline.split("T")[0] : null;
+
+    if (task.status === 'COMPLETED') {
+      // Використовуємо completionDate для виконаних задач
+      dateKey = (task.completionDate || new Date().toISOString()).split('T')[0];
+    } else if (task.deadline) {
+      // Для активних задач - дедлайн
+      dateKey = task.deadline.split('T')[0];
     }
 
     if (dateKey) {
@@ -140,7 +141,8 @@ export const fetchTasks = createAsyncThunk(
       const url = `/api/tasks/calendar?startDate=${startDate}&endDate=${endDate}&includeCompleted=${includeCompleted}`;
 
       const response = await axios.get(url);
-
+      console.log(response.data);
+      // Повертаємо повний масив даних
       return response.data;
     } catch (error) {
       return rejectWithValue(
@@ -155,19 +157,21 @@ export const updateTaskStatus = createAsyncThunk(
   "tasks/updateTaskStatus",
   async ({ id, status }, { rejectWithValue, dispatch }) => {
     try {
-      const params = { status };
-      
-      if (status === "COMPLETED") {
-        const now = new Date();
-        params.completionDate = formatDateForApi(now);
-      }
+      const now = new Date();
+      const params = { 
+        status,
+        completionDate: status === "COMPLETED" ? now.toISOString() : null
+      };
       
       const response = await axios.patch(`/api/tasks/${id}/status`, null, {
-        params: params
+        params: {
+          status: params.status,
+          completionDate: params.completionDate
+        }
       });
       
-      // Перезагружаем список всех задач после обновления
-      await dispatch(fetchTasks({includeCompleted: true})).unwrap();
+      // Важливо: викликати fetchTasks з параметром включення виконаних задач
+      await dispatch(fetchTasks({ includeCompleted: true })).unwrap();
       
       return response.data;
     } catch (error) {
@@ -177,7 +181,6 @@ export const updateTaskStatus = createAsyncThunk(
     }
   }
 );
-
 // Видалення завдання
 export const deleteTask = createAsyncThunk(
   "tasks/deleteTask",
@@ -223,26 +226,34 @@ const taskSlice = createSlice({
       })
       .addCase(fetchTasks.fulfilled, (state, action) => {
         state.loading = false;
-
+      
         // Map and filter tasks
         const mappedTasks = (action.payload || [])
           .filter((task) => task)
-          .map((task) => ({
-            id: task.id,
-            name: task.title || task.name,
-            description: task.description,
-            deadline: task.dueDate,
-            status: task.status,
-            completionDate: task.completionDate,
-            completed: task.completed || task.status === "COMPLETED",
-            createdAt: task.createdAt,
-          }));
-
+          .map((task) => {
+            const mappedTask = {
+              id: task.id,
+              name: task.title || task.name,
+              description: task.description,
+              deadline: task.dueDate,
+              status: task.status,
+              completionDate: task.completionDate,
+              completed: task.completed || task.status === "COMPLETED",
+              createdAt: task.createdAt,
+            };
+      
+            // ВАЖЛИВО: Явно встановлюємо completionDate для виконаних задач
+            if (mappedTask.status === "COMPLETED" && !mappedTask.completionDate) {
+              mappedTask.completionDate = new Date().toISOString();
+            }
+      
+            return mappedTask;
+          });
+      
         state.tasks = sortTasksByDate(mappedTasks);
         state.tasksByDate = organizeTasksByDate(state.tasks);
-
-        state.totalElements =
-          action.payload.totalElements || mappedTasks.length;
+      
+        state.totalElements = action.payload.totalElements || mappedTasks.length;
         state.totalPages = action.payload.totalPages || 1;
         state.page = action.payload.number || 0;
       })
@@ -256,32 +267,31 @@ const taskSlice = createSlice({
       })
       .addCase(updateTaskStatus.fulfilled, (state, action) => {
         state.loading = false;
-
-        // Знаходимо індекс завдання
+      
         const taskId = action.meta.arg.id;
         const taskIndex = state.tasks.findIndex((task) => task.id === taskId);
-
+      
         if (taskIndex !== -1) {
-          // Оновлюємо статус завдання
+          // Оновлюємо статус і дату виконання
           state.tasks[taskIndex].status = action.meta.arg.status;
-          state.tasks[taskIndex].completed =
-            action.meta.arg.status === "COMPLETED";
-
-            if (action.meta.arg.status === "COMPLETED") {
-              const now = new Date();
-              state.tasks[taskIndex].completionDate = formatDateForApi(now);
-            }
-
-          // Також оновлюємо в об'єкті tasksByDate
+          state.tasks[taskIndex].completed = action.meta.arg.status === "COMPLETED";
+          
+          if (action.meta.arg.status === "COMPLETED") {
+            state.tasks[taskIndex].completionDate = new Date().toISOString();
+          }
+      
+          // Оновлення в tasksByDate
           Object.keys(state.tasksByDate).forEach((dateKey) => {
             const dateTaskIndex = state.tasksByDate[dateKey]?.findIndex(
               (t) => t.id === taskId
             );
             if (dateTaskIndex !== -1) {
-              state.tasksByDate[dateKey][dateTaskIndex].status =
-                action.meta.arg.status;
-              state.tasksByDate[dateKey][dateTaskIndex].completed =
-                action.meta.arg.status === "COMPLETED";
+              state.tasksByDate[dateKey][dateTaskIndex].status = action.meta.arg.status;
+              state.tasksByDate[dateKey][dateTaskIndex].completed = action.meta.arg.status === "COMPLETED";
+              
+              if (action.meta.arg.status === "COMPLETED") {
+                state.tasksByDate[dateKey][dateTaskIndex].completionDate = new Date().toISOString();
+              }
             }
           });
         }

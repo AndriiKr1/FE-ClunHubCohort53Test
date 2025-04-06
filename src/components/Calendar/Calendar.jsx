@@ -8,6 +8,7 @@ import leftArrow from '../../assets/images/left.png';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import './Calendar.css';
+import { formatDateKey } from '../../utils/dateHelpers';
 
 function TaskBubble({ task }) {
   const isCompleted = task.status === 'COMPLETED';
@@ -85,12 +86,18 @@ const Calendar = () => {
   };
 
   const getTasksForDay = (day) => {
-    const paddedMonth = (currentMonth + 1).toString().padStart(2, '0');
-    const paddedDay = day.toString().padStart(2, '0');
-    const key = `${currentYear}-${paddedMonth}-${paddedDay}`;
-    
-    // Return all tasks for this day
-    return tasksByDate[key] || [];
+    const key = formatDateKey(currentYear, currentMonth, day);
+  
+    return (tasksByDate[key] || []).filter(task => {
+      if (task.status === 'COMPLETED') {
+        // Порівнюємо з датою завершення
+        const completionDate = task.completionDate?.split('T')[0];
+        return completionDate === key;
+      } else {
+        // Порівнюємо з дедлайном
+        return task.deadline?.startsWith(key);
+      }
+    });
   };
 
   const getFirstDayOfMonth = () => new Date(currentYear, currentMonth, 1).getDay();
@@ -180,7 +187,7 @@ const Calendar = () => {
                         <span className="completed-count">{completedTasks.length} completed</span>
                       )}
                       {activeTasks.length > 0 && (
-                        <span className="active-count">{activeTasks.length} active</span>
+                        <span className="active-count">{activeTasks.length} Task</span>
                       )}
                     </div>
                   )}
