@@ -11,13 +11,13 @@ import './Calendar.css';
 import { formatDateKey } from '../../utils/dateHelpers';
 
 function TaskBubble({ task }) {
-  const isCompleted = task.status === 'COMPLETED';
+  const isCompleted = task.status === 'COMPLETED' || task.completed;
   const name = task.name || task.title || 'Untitled';
   
   return (
     <div className="task-bubble-wrapper">
       <div className={`task-bubble ${isCompleted ? 'completed-task' : ''}`}>
-        {name}
+        {name} {isCompleted && '✓'}
       </div>
       <span className="tooltip">
         {name} 
@@ -30,11 +30,14 @@ function TaskBubble({ task }) {
 const Calendar = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { tasksByDate, loading, error } = useSelector(state => state.tasks);
+  const { tasks, loading, error } = useSelector(state => state.tasks);
 
   const today = new Date();
   const [currentYear, setYear] = useState(today.getFullYear());
   const [currentMonth, setMonth] = useState(today.getMonth());
+  
+  // Local state to organize tasks by date
+  const [organizedTasks, setOrganizedTasks] = useState({});
 
   useEffect(() => {
     const fetchMonthTasks = async () => {
@@ -48,7 +51,7 @@ const Calendar = () => {
         await dispatch(fetchTasks({ 
           fromDate, 
           toDate, 
-          includeCompleted: true // Important: include completed tasks
+          includeCompleted: true // Include completed tasks
         }));
       } catch (err) {
         console.error('Failed to fetch tasks:', err);
@@ -57,6 +60,31 @@ const Calendar = () => {
 
     fetchMonthTasks();
   }, [currentYear, currentMonth, dispatch]);
+  
+  // Process tasks whenever they change
+  useEffect(() => {
+    // Get today's date in YYYY-MM-DD format
+    const todayDate = formatDateForApi(new Date());
+    
+    // Create an object to hold tasks organized by date
+    const tasksByDate = {};
+    
+    tasks.forEach(task => {
+      const isCompleted = task.status === 'COMPLETED' || task.completed;
+      const dateKey = isCompleted 
+        ? todayDate // Put completed tasks on today's date
+        : task.deadline?.split('T')[0]; // Keep active tasks on their deadline
+      
+      if (dateKey) {
+        if (!tasksByDate[dateKey]) {
+          tasksByDate[dateKey] = [];
+        }
+        tasksByDate[dateKey].push(task);
+      }
+    });
+    
+    setOrganizedTasks(tasksByDate);
+  }, [tasks]);
 
   const handleTaskClick = (day) => {
     const paddedMonth = (currentMonth + 1).toString().padStart(2, '0');
@@ -87,17 +115,7 @@ const Calendar = () => {
 
   const getTasksForDay = (day) => {
     const key = formatDateKey(currentYear, currentMonth, day);
-  
-    return (tasksByDate[key] || []).filter(task => {
-      if (task.status === 'COMPLETED') {
-        // Порівнюємо з датою завершення
-        const completionDate = task.completionDate?.split('T')[0];
-        return completionDate === key;
-      } else {
-        // Порівнюємо з дедлайном
-        return task.deadline?.startsWith(key);
-      }
-    });
+    return organizedTasks[key] || [];
   };
 
   const getFirstDayOfMonth = () => new Date(currentYear, currentMonth, 1).getDay();
@@ -170,8 +188,8 @@ const Calendar = () => {
             {Array.from({ length: daysInMonth }).map((_, index) => {
               const day = index + 1;
               const taskList = getTasksForDay(day);
-              const completedTasks = taskList.filter(task => task.status === 'COMPLETED');
-              const activeTasks = taskList.filter(task => task.status !== 'COMPLETED');
+              const completedTasks = taskList.filter(task => task.status === 'COMPLETED' || task.completed);
+              const activeTasks = taskList.filter(task => task.status !== 'COMPLETED' && !task.completed);
 
               return (
                 <div 
@@ -187,15 +205,22 @@ const Calendar = () => {
                         <span className="completed-count">{completedTasks.length} completed</span>
                       )}
                       {activeTasks.length > 0 && (
-                        <span className="active-count">{activeTasks.length} Task</span>
+                        <span className="active-count">{activeTasks.length} task{activeTasks.length !== 1 ? 's' : ''}</span>
                       )}
                     </div>
                   )}
 
-                  {/* Display up to 2 tasks, prioritizing completed ones first */}
-                  {taskList.slice(0, 2).map((task, i) => (
-                    <TaskBubble key={i} task={task} />
+                  {/* Display up to 2 tasks, prioritizing completed tasks */}
+                  {completedTasks.slice(0, Math.min(2, completedTasks.length)).map((task, i) => (
+                    <TaskBubble key={`completed-${i}`} task={task} />
                   ))}
+                  
+                  {/* If space left, display active tasks */}
+                  {completedTasks.length < 2 && 
+                    activeTasks.slice(0, 2 - completedTasks.length).map((task, i) => (
+                      <TaskBubble key={`active-${i}`} task={task} />
+                    ))
+                  }
 
                   {taskList.length > 2 && (
                     <div className="more-tasks">+{taskList.length - 2} more</div>

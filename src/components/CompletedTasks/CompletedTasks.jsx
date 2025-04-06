@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchTasks, updateTaskStatus } from '../../store/slices/taskSlice';
@@ -15,7 +15,7 @@ const CompletedTasks = () => {
 
   const fetchTasksForDate = useCallback(async (date) => {
     try {
-      await dispatch(fetchTasks({
+       dispatch(fetchTasks({
         fromDate: date,
         toDate: date,
         includeCompleted: true
@@ -68,8 +68,11 @@ const CompletedTasks = () => {
   };
 
   
-  const completedTasks = tasks.filter(task => task.completed || task.status === 'COMPLETED');
-  const activeTasks = tasks.filter(task => !task.completed && task.status !== 'COMPLETED');
+  const completedTasks = useMemo(() =>
+    tasks.filter(task => task.completed || task.status === 'COMPLETED'), [tasks]);
+  
+  const activeTasks = useMemo(() =>
+    tasks.filter(task => !task.completed && task.status !== 'COMPLETED'), [tasks]);
 
   return (
     <div className="completed-page">

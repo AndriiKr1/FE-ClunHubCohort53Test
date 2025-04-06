@@ -11,7 +11,7 @@ const sortTasksByDate = (tasks) => {
     return dateB - dateA;
   });
 };
-const organizeTasksByDate = (tasks) => {
+/*const organizeTasksByDate = (tasks) => {
   return tasks.reduce((acc, task) => {
     let dateKey;
 
@@ -29,7 +29,7 @@ const organizeTasksByDate = (tasks) => {
     }
     return acc;
   }, {});
-};
+};*/
 
 // Створення завдання
 export const createTask = createAsyncThunk(
@@ -141,7 +141,7 @@ export const fetchTasks = createAsyncThunk(
       const url = `/api/tasks/calendar?startDate=${startDate}&endDate=${endDate}&includeCompleted=${includeCompleted}`;
 
       const response = await axios.get(url);
-      console.log(response.data);
+      
       // Повертаємо повний масив даних
       return response.data;
     } catch (error) {
@@ -157,23 +157,23 @@ export const updateTaskStatus = createAsyncThunk(
   "tasks/updateTaskStatus",
   async ({ id, status }, { rejectWithValue, dispatch }) => {
     try {
+      // Create today's date in the correct format
       const now = new Date();
-      const params = { 
+      const today = now.toISOString().split('T')[0]; // Format: YYYY-MM-DD
+      
+      const response = await axios.patch(`/api/tasks/${id}/status?status=${status}`);
+      
+      // After successful API call, get all tasks including completed ones
+      await dispatch(fetchTasks({ 
+        includeCompleted: true 
+      })).unwrap();
+      
+      return {
+        ...response.data,
+        id,
         status,
-        completionDate: status === "COMPLETED" ? now.toISOString() : null
+        completionDate: status === "COMPLETED" ? today : null
       };
-      
-      const response = await axios.patch(`/api/tasks/${id}/status`, null, {
-        params: {
-          status: params.status,
-          completionDate: params.completionDate
-        }
-      });
-      
-      // Важливо: викликати fetchTasks з параметром включення виконаних задач
-      await dispatch(fetchTasks({ includeCompleted: true })).unwrap();
-      
-      return response.data;
     } catch (error) {
       return rejectWithValue(
         error.response?.data?.message || "Failed to update task status"
@@ -237,26 +237,48 @@ const taskSlice = createSlice({
               description: task.description,
               deadline: task.dueDate,
               status: task.status,
-              completionDate: task.completionDate,
               completed: task.completed || task.status === "COMPLETED",
               createdAt: task.createdAt,
+              completionDate: task.completionDate
             };
       
-            // ВАЖЛИВО: Явно встановлюємо completionDate для виконаних задач
+            // IMPORTANT: Set completionDate for completed tasks if missing
             if (mappedTask.status === "COMPLETED" && !mappedTask.completionDate) {
-              mappedTask.completionDate = new Date().toISOString();
+              mappedTask.completionDate = new Date().toISOString().split('T')[0];
             }
       
             return mappedTask;
           });
       
         state.tasks = sortTasksByDate(mappedTasks);
-        state.tasksByDate = organizeTasksByDate(state.tasks);
+        
+        // Create tasksByDate map with proper organization
+        state.tasksByDate = mappedTasks.reduce((acc, task) => {
+          // For completed tasks, use completionDate
+          let dateKey;
+          
+          if (task.status === "COMPLETED") {
+            dateKey = task.completionDate;
+          } else {
+            // For incomplete tasks, use deadline
+            dateKey = task.deadline?.split('T')[0];
+          }
+          
+          if (dateKey) {
+            if (!acc[dateKey]) {
+              acc[dateKey] = [];
+            }
+            acc[dateKey].push(task);
+          }
+          
+          return acc;
+        }, {});
       
         state.totalElements = action.payload.totalElements || mappedTasks.length;
         state.totalPages = action.payload.totalPages || 1;
         state.page = action.payload.number || 0;
       })
+      
       .addCase(fetchTasks.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
@@ -268,32 +290,38 @@ const taskSlice = createSlice({
       .addCase(updateTaskStatus.fulfilled, (state, action) => {
         state.loading = false;
       
-        const taskId = action.meta.arg.id;
+        // Find and update the task in the tasks array
+        const taskId = action.payload.id;
+        const newStatus = action.payload.status;
+        const completionDate = action.payload.completionDate;
+        
         const taskIndex = state.tasks.findIndex((task) => task.id === taskId);
-      
+        
         if (taskIndex !== -1) {
-          // Оновлюємо статус і дату виконання
-          state.tasks[taskIndex].status = action.meta.arg.status;
-          state.tasks[taskIndex].completed = action.meta.arg.status === "COMPLETED";
+          // Update the task status and completion date
+          state.tasks[taskIndex].status = newStatus;
+          state.tasks[taskIndex].completed = newStatus === "COMPLETED";
           
-          if (action.meta.arg.status === "COMPLETED") {
-            state.tasks[taskIndex].completionDate = new Date().toISOString();
-          }
-      
-          // Оновлення в tasksByDate
-          Object.keys(state.tasksByDate).forEach((dateKey) => {
-            const dateTaskIndex = state.tasksByDate[dateKey]?.findIndex(
-              (t) => t.id === taskId
-            );
-            if (dateTaskIndex !== -1) {
-              state.tasksByDate[dateKey][dateTaskIndex].status = action.meta.arg.status;
-              state.tasksByDate[dateKey][dateTaskIndex].completed = action.meta.arg.status === "COMPLETED";
-              
-              if (action.meta.arg.status === "COMPLETED") {
-                state.tasksByDate[dateKey][dateTaskIndex].completionDate = new Date().toISOString();
-              }
+          if (newStatus === "COMPLETED") {
+            state.tasks[taskIndex].completionDate = completionDate;
+            
+            // Move task from deadline date to completion date in tasksByDate
+            const deadlineDate = state.tasks[taskIndex].deadline?.split('T')[0];
+            
+            // Remove from deadline date if it exists there
+            if (deadlineDate && state.tasksByDate[deadlineDate]) {
+              state.tasksByDate[deadlineDate] = state.tasksByDate[deadlineDate].filter(
+                t => t.id !== taskId
+              );
             }
-          });
+            
+            // Add to completion date
+            if (!state.tasksByDate[completionDate]) {
+              state.tasksByDate[completionDate] = [];
+            }
+            
+            state.tasksByDate[completionDate].push(state.tasks[taskIndex]);
+          }
         }
       })
       .addCase(updateTaskStatus.rejected, (state, action) => {
