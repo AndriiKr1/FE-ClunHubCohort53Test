@@ -331,3 +331,41 @@ body {
   }
 }
 
+/* Add these styles to src/components/Calendar/Calendar.css */
+
+.task-bubble.completed-task {
+  background-color: #4CAF50; /* Green background for completed tasks */
+  color: white;
+}
+
+.task-count {
+  display: flex;
+  flex-direction: column;
+  font-size: 8px;
+  margin-top: 2px;
+  margin-bottom: 2px;
+}
+
+.completed-count {
+  color: #4CAF50;
+  font-weight: bold;
+}
+
+.active-count {
+  color: #2196F3;
+  font-weight: bold;
+}
+
+.more-tasks {
+  font-size: 8px;
+  color: #666;
+  text-align: center;
+  font-style: italic;
+  margin-top: 2px;
+}
+
+/* Make the tooltip more informative */
+.tooltip {
+  min-width: 120px;
+  text-align: center;
+}

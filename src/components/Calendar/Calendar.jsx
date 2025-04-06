@@ -9,11 +9,19 @@ import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import './Calendar.css';
 
-function TaskBubble({ name }) {
+function TaskBubble({ task }) {
+  const isCompleted = task.status === 'COMPLETED';
+  const name = task.name || task.title || 'Untitled';
+  
   return (
     <div className="task-bubble-wrapper">
-      <div className="task-bubble">{name}</div>
-      <span className="tooltip">{name}</span>
+      <div className={`task-bubble ${isCompleted ? 'completed-task' : ''}`}>
+        {name}
+      </div>
+      <span className="tooltip">
+        {name} 
+        {isCompleted ? ' (Completed)' : ' (Due date)'}
+      </span>
     </div>
   );
 }
@@ -36,18 +44,15 @@ const Calendar = () => {
         const fromDate = formatDateForApi(startDate);
         const toDate = formatDateForApi(endDate);
       
-        // const fromDate = startDate.toISOString().split('T')[0];
-      // const toDate = endDate.toISOString().split('T')[0];
-
-      await dispatch(fetchTasks({ 
-        fromDate, 
-        toDate, 
-        includeCompleted: true // Це дозволить відображати завершені завдання
-      }));
-    } catch (err) {
-      console.error('Failed to fetch tasks:', err);
-    }
-  };
+        await dispatch(fetchTasks({ 
+          fromDate, 
+          toDate, 
+          includeCompleted: true // Important: include completed tasks
+        }));
+      } catch (err) {
+        console.error('Failed to fetch tasks:', err);
+      }
+    };
 
     fetchMonthTasks();
   }, [currentYear, currentMonth, dispatch]);
@@ -83,9 +88,9 @@ const Calendar = () => {
     const paddedMonth = (currentMonth + 1).toString().padStart(2, '0');
     const paddedDay = day.toString().padStart(2, '0');
     const key = `${currentYear}-${paddedMonth}-${paddedDay}`;
-    const allTasks = tasksByDate[key] || [];
-    const completedTasks = allTasks.filter(task => task.status === 'COMPLETED');
-    return completedTasks;
+    
+    // Return all tasks for this day
+    return tasksByDate[key] || [];
   };
 
   const getFirstDayOfMonth = () => new Date(currentYear, currentMonth, 1).getDay();
@@ -158,6 +163,8 @@ const Calendar = () => {
             {Array.from({ length: daysInMonth }).map((_, index) => {
               const day = index + 1;
               const taskList = getTasksForDay(day);
+              const completedTasks = taskList.filter(task => task.status === 'COMPLETED');
+              const activeTasks = taskList.filter(task => task.status !== 'COMPLETED');
 
               return (
                 <div 
@@ -169,16 +176,18 @@ const Calendar = () => {
 
                   {taskList.length > 0 && (
                     <div className="task-count">
-                      {taskList.length} task{taskList.length !== 1 ? 's' : ''}
+                      {completedTasks.length > 0 && (
+                        <span className="completed-count">{completedTasks.length} completed</span>
+                      )}
+                      {activeTasks.length > 0 && (
+                        <span className="active-count">{activeTasks.length} active</span>
+                      )}
                     </div>
                   )}
 
+                  {/* Display up to 2 tasks, prioritizing completed ones first */}
                   {taskList.slice(0, 2).map((task, i) => (
-                    <TaskBubble 
-                      key={i} 
-                      name={task.name || task.title || 'Untitled'} 
-                      isCompleted={task.status === 'COMPLETED'}
-                    />
+                    <TaskBubble key={i} task={task} />
                   ))}
 
                   {taskList.length > 2 && (

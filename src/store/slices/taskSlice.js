@@ -165,7 +165,7 @@ export const updateTaskStatus = createAsyncThunk(
       const response = await axios.patch(`/api/tasks/${id}/status`, null, {
         params: params
       });
-      console.log("Server response:", response.data);
+      
       // Перезагружаем список всех задач после обновления
       await dispatch(fetchTasks({includeCompleted: true})).unwrap();
       

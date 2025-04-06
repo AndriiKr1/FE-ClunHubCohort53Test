@@ -32,6 +32,7 @@ const CompletedTasks = () => {
     
     const dateToUse = storedDate || formattedToday;
     setSelectedDate(dateToUse);
+
     fetchTasksForDate(dateToUse);
   }, [fetchTasksForDate]);
 
@@ -66,43 +67,73 @@ const CompletedTasks = () => {
     }
   };
 
-  // Filter only completed tasks
+  
   const completedTasks = tasks.filter(task => task.completed || task.status === 'COMPLETED');
+  const activeTasks = tasks.filter(task => !task.completed && task.status !== 'COMPLETED');
 
   return (
     <div className="completed-page">
       <div className="top-header">
         <ProfileHeader />
       </div>
-
+  
       <div className="date-label-display">
         {formatDate(selectedDate)}
       </div>
-
+  
       {error && <div className="error-message">{error}</div>}
-
-      <div className="task-list">
-        {loading ? (
-          <div className="loading">Loading tasks...</div>
-        ) : completedTasks.length > 0 ? (
-          completedTasks.map((task) => (
-            <div 
-              className="task-card completed" 
-              key={task.id}
-              onClick={() => toggleTaskCompletion(task.id, true)}
-            >
-              <span className="task-status-indicator"></span>
-              {task.title || task.name || 'Untitled Task'}
-              {task.description && (
-                <div className="task-description">{task.description}</div>
-              )}
-            </div>
-          ))
-        ) : (
-          <div className="no-tasks">No completed tasks for this date</div>
-        )}
-      </div>
-
+  
+      {/* Add a section title for clarity */}
+      <h3 className="section-title">Tasks for this date</h3>
+  
+      {/* Show completed tasks */}
+      {completedTasks.length > 0 && (
+        <>
+          <h4 className="subsection-title">Completed Tasks</h4>
+          <div className="task-list">
+            {completedTasks.map((task) => (
+              <div 
+                className="task-card completed" 
+                key={task.id}
+                onClick={() => toggleTaskCompletion(task.id, true)}
+              >
+                <span className="task-status-indicator"></span>
+                {task.title || task.name || 'Untitled Task'}
+                {task.description && (
+                  <div className="task-description">{task.description}</div>
+                )}
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+  
+      {/* Show active tasks */}
+      {activeTasks.length > 0 && (
+        <>
+          <h4 className="subsection-title">Active Tasks</h4>
+          <div className="task-list">
+            {activeTasks.map((task) => (
+              <div 
+                className="task-card" 
+                key={task.id}
+                onClick={() => toggleTaskCompletion(task.id, false)}
+              >
+                <span className="task-status-indicator"></span>
+                {task.title || task.name || 'Untitled Task'}
+                {task.description && (
+                  <div className="task-description">{task.description}</div>
+                )}
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+  
+      {!loading && completedTasks.length === 0 && activeTasks.length === 0 && (
+        <div className="no-tasks">No tasks for this date</div>
+      )}
+  
       <div className="back-section">
         <img
           src={leftArrow}
