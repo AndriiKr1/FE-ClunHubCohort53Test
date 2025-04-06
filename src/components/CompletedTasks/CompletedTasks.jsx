@@ -52,7 +52,6 @@ const CompletedTasks = () => {
 
   const toggleTaskCompletion = async (taskId, completed) => {
     try {
-      console.log('Toggling task completion:', taskId, completed);
       const newStatus = completed ? 'IN_PROGRESS' : 'COMPLETED';
       
       await dispatch(updateTaskStatus({ 
@@ -68,7 +67,7 @@ const CompletedTasks = () => {
   };
 
   // Filter only completed tasks
-  const completedTasks = tasks.filter(task => task.status === 'COMPLETED');
+  const completedTasks = tasks.filter(task => task.completed || task.status === 'COMPLETED');
 
   return (
     <div className="completed-page">

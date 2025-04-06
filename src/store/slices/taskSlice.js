@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import axios from '../../utils/axiosConfig';
+import axios from "../../utils/axiosConfig";
 import { formatDateForApi } from "../../utils/dataMappers";
 
 // Утиліти для сортування та організації завдань
@@ -10,12 +10,18 @@ const sortTasksByDate = (tasks) => {
     return dateB - dateA;
   });
 };
-
 const organizeTasksByDate = (tasks) => {
   return tasks.reduce((acc, task) => {
-    const dateKey = task.deadline ? task.deadline.split('T')[0] : 
-                    (task.completionDate ? task.completionDate.split('T')[0] : null);
+    let dateKey;
     
+    if (task.status === 'COMPLETED' && task.completionDate) {
+      // Для выполненных задач используем дату выполнения
+      dateKey = task.completionDate.split("T")[0];
+    } else {
+      // Для остальных задач используем дедлайн
+      dateKey = task.deadline ? task.deadline.split("T")[0] : null;
+    }
+
     if (dateKey) {
       acc[dateKey] = acc[dateKey] || [];
       acc[dateKey].push(task);
@@ -31,16 +37,18 @@ export const createTask = createAsyncThunk(
     try {
       // Валідація даних
       if (!taskData.name || taskData.name.length < 10) {
-        return rejectWithValue("Назва завдання має бути не менше 10 символів");
+        return rejectWithValue(
+          "The task name must be at least 10 characters long."
+        );
       }
 
       if (taskData.name.length > 30) {
-        return rejectWithValue("Назва завдання не може перевищувати 30 символів");
+        return rejectWithValue("The task name cannot exceed 30 characters.");
       }
 
       // Перевірка дати
-      const formattedDate = taskData.deadline 
-        ? formatDateForApi(taskData.deadline) 
+      const formattedDate = taskData.deadline
+        ? formatDateForApi(taskData.deadline)
         : null;
 
       if (!formattedDate) {
@@ -53,29 +61,19 @@ export const createTask = createAsyncThunk(
         description: taskData.description || "",
         dueDate: formattedDate,
         status: "IN_PROGRESS",
-        priority: taskData.priority || 3
+        priority: taskData.priority || 3,
       };
 
-      console.log("Надсилання запиту на створення завдання:", taskRequest);
-
       // Надсилання запиту
-      const response = await axios.post('/api/tasks', taskRequest);
-      
-      console.log("Відповідь від створення завдання:", response.data);
+      const response = await axios.post("/api/tasks", taskRequest);
 
       // Оновлення списку завдань
       await dispatch(fetchTasks()).unwrap();
 
       return response.data;
     } catch (error) {
-      console.error("Повна помилка створення завдання:", {
-        response: error.response,
-        message: error.message
-      });
-
       return rejectWithValue(
-        error.response?.data?.message || 
-        "Не вдалося створити завдання"
+        error.response?.data?.message || "Failed to create task"
       );
     }
   }
@@ -88,39 +86,39 @@ export const updateTask = createAsyncThunk(
     try {
       // Валідація даних
       if (!taskData.name || taskData.name.length < 10) {
-        return rejectWithValue("Назва завдання має бути не менше 10 символів");
+        return rejectWithValue(
+          "The task name must be at least 10 characters long"
+        );
       }
-      
+
       if (taskData.name.length > 30) {
-        return rejectWithValue("Назва завдання не може перевищувати 30 символів");
+        return rejectWithValue("The task name cannot exceed 30 characters");
       }
-      
+
       // Форматування дати
-      const formattedDate = taskData.deadline 
-        ? formatDateForApi(taskData.deadline) 
+      const formattedDate = taskData.deadline
+        ? formatDateForApi(taskData.deadline)
         : null;
-      
+
       const updateRequest = {
         title: taskData.name,
         description: taskData.description || "",
-        dueDate: formattedDate
+        dueDate: formattedDate,
       };
-      
-      console.log("Оновлення завдання:", taskId, updateRequest);
-      
-      const response = await axios.put(`/api/tasks?taskId=${taskId}&email=${email}`, updateRequest);
-      
-      console.log("Відповідь оновлення завдання:", response.data);
-      
+
+      const response = await axios.put(
+        `/api/tasks?taskId=${taskId}&email=${email}`,
+        updateRequest
+      );
+
       // Оновлення списку завдань
       await dispatch(fetchTasks()).unwrap();
-      
+
       return response.data;
     } catch (error) {
-      console.error("Помилка оновлення завдання:", error);
+      console.error("Task update error:", error);
       return rejectWithValue(
-        error.response?.data?.message || 
-        "Не вдалося оновити завдання"
+        error.response?.data?.message || "Failed to update task"
       );
     }
   }
@@ -139,41 +137,43 @@ export const fetchTasks = createAsyncThunk(
       const startDate = fromDate || formatDateForApi(firstDay);
       const endDate = toDate || formatDateForApi(lastDay);
 
-      // Додаємо параметр includeCompleted в URL
       const url = `/api/tasks/calendar?startDate=${startDate}&endDate=${endDate}&includeCompleted=${includeCompleted}`;
-      
-      console.log("Fetching tasks URL:", url);
+
       const response = await axios.get(url);
-      console.log("Fetched tasks response:", response.data);
-      
+
       return response.data;
     } catch (error) {
-      console.error("Error fetching tasks:", error);
-      return rejectWithValue(error.response?.data?.message || "Failed to fetch tasks");
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to fetch tasks"
+      );
     }
   }
 );
-
 
 // Оновлення статусу завдання
 export const updateTaskStatus = createAsyncThunk(
   "tasks/updateTaskStatus",
   async ({ id, status }, { rejectWithValue, dispatch }) => {
     try {
-      console.log(`Updating task status: ID=${id}, status=${status}`);
+      const params = { status };
+      
+      if (status === "COMPLETED") {
+        const now = new Date();
+        params.completionDate = formatDateForApi(now);
+      }
       
       const response = await axios.patch(`/api/tasks/${id}/status`, null, {
-        params: { status }
+        params: params
       });
-
-      console.log("Status update response:", response.data);
-      
-      // Refresh tasks after status update
-      await dispatch(fetchTasks()).unwrap();
+      console.log("Server response:", response.data);
+      // Перезагружаем список всех задач после обновления
+      await dispatch(fetchTasks({includeCompleted: true})).unwrap();
       
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response?.data?.message || "Failed to update task status");
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to update task status"
+      );
     }
   }
 );
@@ -183,27 +183,19 @@ export const deleteTask = createAsyncThunk(
   "tasks/deleteTask",
   async (taskId, { rejectWithValue, dispatch }) => {
     try {
-      console.log("Видалення завдання:", taskId);
-      
       await axios.delete(`/api/tasks?id=${taskId}`);
-      
-      console.log("Завдання успішно видалено");
-      
+
       // Оновлення списку завдань
       await dispatch(fetchTasks()).unwrap();
-      
+
       return taskId;
     } catch (error) {
-      console.error("Помилка видалення завдання:", error);
       return rejectWithValue(
-        error.response?.data?.message || 
-        "Не вдалося видалити завдання"
+        error.response?.data?.message || "Failed to delete task"
       );
     }
   }
 );
-
-
 
 // Slice
 const taskSlice = createSlice({
@@ -215,12 +207,12 @@ const taskSlice = createSlice({
     error: null,
     totalElements: 0,
     totalPages: 0,
-    page: 0
+    page: 0,
   },
   reducers: {
     clearTaskError: (state) => {
       state.error = null;
-    }
+    },
   },
 
   extraReducers: (builder) => {
@@ -231,24 +223,26 @@ const taskSlice = createSlice({
       })
       .addCase(fetchTasks.fulfilled, (state, action) => {
         state.loading = false;
-        
+
         // Map and filter tasks
         const mappedTasks = (action.payload || [])
-          .filter(task => task)
-          .map(task => ({
+          .filter((task) => task)
+          .map((task) => ({
             id: task.id,
             name: task.title || task.name,
             description: task.description,
             deadline: task.dueDate,
             status: task.status,
-            completed: task.status === 'COMPLETED',
-            createdAt: task.createdAt
+            completionDate: task.completionDate,
+            completed: task.completed || task.status === "COMPLETED",
+            createdAt: task.createdAt,
           }));
-        
+
         state.tasks = sortTasksByDate(mappedTasks);
         state.tasksByDate = organizeTasksByDate(state.tasks);
-        
-        state.totalElements = action.payload.totalElements || mappedTasks.length;
+
+        state.totalElements =
+          action.payload.totalElements || mappedTasks.length;
         state.totalPages = action.payload.totalPages || 1;
         state.page = action.payload.number || 0;
       })
@@ -260,15 +254,43 @@ const taskSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(updateTaskStatus.fulfilled, (state) => {
+      .addCase(updateTaskStatus.fulfilled, (state, action) => {
         state.loading = false;
-        state.error = null;
+
+        // Знаходимо індекс завдання
+        const taskId = action.meta.arg.id;
+        const taskIndex = state.tasks.findIndex((task) => task.id === taskId);
+
+        if (taskIndex !== -1) {
+          // Оновлюємо статус завдання
+          state.tasks[taskIndex].status = action.meta.arg.status;
+          state.tasks[taskIndex].completed =
+            action.meta.arg.status === "COMPLETED";
+
+            if (action.meta.arg.status === "COMPLETED") {
+              const now = new Date();
+              state.tasks[taskIndex].completionDate = formatDateForApi(now);
+            }
+
+          // Також оновлюємо в об'єкті tasksByDate
+          Object.keys(state.tasksByDate).forEach((dateKey) => {
+            const dateTaskIndex = state.tasksByDate[dateKey]?.findIndex(
+              (t) => t.id === taskId
+            );
+            if (dateTaskIndex !== -1) {
+              state.tasksByDate[dateKey][dateTaskIndex].status =
+                action.meta.arg.status;
+              state.tasksByDate[dateKey][dateTaskIndex].completed =
+                action.meta.arg.status === "COMPLETED";
+            }
+          });
+        }
       })
       .addCase(updateTaskStatus.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       });
-  }
+  },
 });
 
 export const { clearTaskError } = taskSlice.actions;

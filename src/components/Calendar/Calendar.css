@@ -24,7 +24,7 @@ body {
 .calendar-page {
   width: 100vw;
   min-height: 100vh;
-  min-height: unset;
+  
   background: linear-gradient(to bottom, #60E8F5,#D1CB84, #E9FC5F);
   border-radius: 0px;
   padding: 20px;

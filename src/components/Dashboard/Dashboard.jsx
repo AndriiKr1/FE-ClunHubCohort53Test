@@ -34,12 +34,12 @@ const Dashboard = () => {
   }, [dispatch, location.state?.shouldRefresh]);
 
   // Filter out completed tasks
-  const activeTasks = tasks.filter((task) => task.status !== "COMPLETED");
+  const activeTasks = tasks.filter((task) => {
+    return !task.completed;
+  });
 
   const handleCompleteTask = async (taskId) => {
     try {
-      console.log("Completing task:", taskId);
-
       await dispatch(
         updateTaskStatus({
           id: taskId,
@@ -104,7 +104,7 @@ const Dashboard = () => {
       today.getMonth() + 1
     ).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
     localStorage.setItem("selectedDate", formattedToday);
-    navigate("/completed");
+    navigate("/calendar");
   };
 
   return (

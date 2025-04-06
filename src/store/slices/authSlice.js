@@ -1,7 +1,5 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import axios from '../../utils/axiosConfig';
-
-
+import axios from "../../utils/axiosConfig";
 
 export const registerUser = createAsyncThunk(
   "auth/signup",
@@ -12,18 +10,15 @@ export const registerUser = createAsyncThunk(
         username: userData.username,
         email: userData.email,
         password: userData.password,
-        age: parseInt(userData.age),        
-        avatarId: userData.avatar 
+        age: parseInt(userData.age),
+        avatarId: userData.avatar,
       });
       return response.data;
     } catch (error) {
-      return rejectWithValue(
-        error.response?.data || "Registration error"
-      );
+      return rejectWithValue(error.response?.data || "Registration error");
     }
   }
 );
-
 
 export const loginUser = createAsyncThunk(
   "auth/signin",
@@ -39,7 +34,9 @@ export const loginUser = createAsyncThunk(
         } else if (error.response.status === 401) {
           return rejectWithValue("invalid_credentials");
         } else {
-          return rejectWithValue(error.response.data?.message || "server_error");
+          return rejectWithValue(
+            error.response.data?.message || "server_error"
+          );
         }
       } else if (error.request) {
         // Request made but no response received
@@ -60,7 +57,9 @@ export const requestPasswordReset = createAsyncThunk(
       return response.data;
     } catch (error) {
       if (error.response) {
-        return rejectWithValue(error.response.data.message || "Failed to request password reset");
+        return rejectWithValue(
+          error.response.data.message || "Failed to request password reset"
+        );
       } else {
         return rejectWithValue("Network error. Please try again later.");
       }
@@ -72,17 +71,17 @@ export const resetPassword = createAsyncThunk(
   "auth/resetPassword",
   async (data, { rejectWithValue }) => {
     try {
-      console.log("Sending reset password request:", data);
       const response = await axios.post(`/api/auth/reset-password`, {
         token: data.token,
         newPassword: data.newPassword,
-        confirmPassword: data.confirmPassword
+        confirmPassword: data.confirmPassword,
       });
-      
+
       return response.data;
     } catch (error) {
-     
-      return rejectWithValue(error.response?.data || "Failed to reset password");
+      return rejectWithValue(
+        error.response?.data || "Failed to reset password"
+      );
     }
   }
 );
@@ -91,10 +90,10 @@ const loadUserFromStorage = () => {
   try {
     const storedUser = localStorage.getItem("user");
     const storedToken = localStorage.getItem("token");
-    
+
     return {
       user: storedUser ? JSON.parse(storedUser) : null,
-      token: storedToken || null
+      token: storedToken || null,
     };
   } catch (error) {
     console.error("Failed to load user data from localStorage:", error);
@@ -113,8 +112,8 @@ const initialState = {
     isCodeVerified: false,
     isLoading: false,
     error: null,
-    message: null
-  }
+    message: null,
+  },
 };
 
 const authSlice = createSlice({
@@ -135,9 +134,9 @@ const authSlice = createSlice({
         isCodeVerified: false,
         isLoading: false,
         error: null,
-        message: null
+        message: null,
       };
-    }
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -174,15 +173,16 @@ const authSlice = createSlice({
         state.error = action.payload;
       })
 
-       // Запит на скидання паролю
-       .addCase(requestPasswordReset.pending, (state) => {
+      // Запит на скидання паролю
+      .addCase(requestPasswordReset.pending, (state) => {
         state.passwordReset.isLoading = true;
         state.passwordReset.error = null;
       })
       .addCase(requestPasswordReset.fulfilled, (state) => {
         state.passwordReset.isLoading = false;
         state.passwordReset.isLinkSent = true;
-        state.passwordReset.message = "If your email is registered, a password reset code has been sent.";
+        state.passwordReset.message =
+          "If your email is registered, a password reset code has been sent.";
       })
       .addCase(requestPasswordReset.rejected, (state, action) => {
         state.passwordReset.isLoading = false;
@@ -197,19 +197,22 @@ const authSlice = createSlice({
       .addCase(resetPassword.fulfilled, (state) => {
         state.passwordReset.isLoading = false;
         state.passwordReset.isCodeVerified = true;
-        state.passwordReset.message = "Your password has been reset successfully";
+        state.passwordReset.message =
+          "Your password has been reset successfully";
       })
       .addCase(resetPassword.rejected, (state, action) => {
         state.passwordReset.isLoading = false;
-        
+
         // Handle ErrorResponseDto format
         if (action.payload && action.payload.error) {
           state.passwordReset.error = action.payload.error;
         } else {
-          state.passwordReset.error = action.payload || "Failed to reset password";
+          state.passwordReset.error =
+            action.payload || "Failed to reset password";
         }
       });
   },
 });
-export const { logout, clearError, clearPasswordResetState } = authSlice.actions;
+export const { logout, clearError, clearPasswordResetState } =
+  authSlice.actions;
 export default authSlice.reducer;

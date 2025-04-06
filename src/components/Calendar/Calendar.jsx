@@ -39,11 +39,15 @@ const Calendar = () => {
         // const fromDate = startDate.toISOString().split('T')[0];
       // const toDate = endDate.toISOString().split('T')[0];
 
-        await dispatch(fetchTasks({ fromDate, toDate }));
-      } catch (err) {
-        console.error('Failed to fetch tasks:', err);
-      }
-    };
+      await dispatch(fetchTasks({ 
+        fromDate, 
+        toDate, 
+        includeCompleted: true // Це дозволить відображати завершені завдання
+      }));
+    } catch (err) {
+      console.error('Failed to fetch tasks:', err);
+    }
+  };
 
     fetchMonthTasks();
   }, [currentYear, currentMonth, dispatch]);
@@ -79,7 +83,9 @@ const Calendar = () => {
     const paddedMonth = (currentMonth + 1).toString().padStart(2, '0');
     const paddedDay = day.toString().padStart(2, '0');
     const key = `${currentYear}-${paddedMonth}-${paddedDay}`;
-    return tasksByDate[key] || [];
+    const allTasks = tasksByDate[key] || [];
+    const completedTasks = allTasks.filter(task => task.status === 'COMPLETED');
+    return completedTasks;
   };
 
   const getFirstDayOfMonth = () => new Date(currentYear, currentMonth, 1).getDay();
@@ -171,6 +177,7 @@ const Calendar = () => {
                     <TaskBubble 
                       key={i} 
                       name={task.name || task.title || 'Untitled'} 
+                      isCompleted={task.status === 'COMPLETED'}
                     />
                   ))}
 
