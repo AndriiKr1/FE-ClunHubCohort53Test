@@ -11,25 +11,32 @@ const sortTasksByDate = (tasks) => {
     return dateB - dateA;
   });
 };
-/*const organizeTasksByDate = (tasks) => {
+
+const organizeTasksByDate = (tasks) => {
   return tasks.reduce((acc, task) => {
     let dateKey;
 
-    if (task.status === 'COMPLETED') {
-      // Використовуємо completionDate для виконаних задач
-      dateKey = (task.completionDate || new Date().toISOString()).split('T')[0];
-    } else if (task.deadline) {
-      // Для активних задач - дедлайн
+    // Для виконаних завдань пріоритетним є completionDate
+    if (task.status === 'COMPLETED' || task.completed) {
+      dateKey = (task.completionDate || task.deadline || new Date().toISOString()).split('T')[0];
+    } 
+    // Для активних завдань використовуємо deadline
+    else if (task.deadline) {
       dateKey = task.deadline.split('T')[0];
     }
 
     if (dateKey) {
-      acc[dateKey] = acc[dateKey] || [];
+      // Якщо такої дати ще немає в акумуляторі, створюємо порожній масив
+      if (!acc[dateKey]) {
+        acc[dateKey] = [];
+      }
+      // Додаємо завдання до масиву для цієї дати
       acc[dateKey].push(task);
     }
+    
     return acc;
   }, {});
-};*/
+};
 
 // Створення завдання
 export const createTask = createAsyncThunk(
@@ -273,7 +280,7 @@ const taskSlice = createSlice({
           
           return acc;
         }, {});
-      
+        state.tasksByDate = organizeTasksByDate(mappedTasks);
         state.totalElements = action.payload.totalElements || mappedTasks.length;
         state.totalPages = action.payload.totalPages || 1;
         state.page = action.payload.number || 0;
