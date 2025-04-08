@@ -7,7 +7,6 @@ import ProfileHeader from "../ProfileHeader/ProfileHeader";
 import leftIcon from "../../assets/images/left.png";
 import checkmarkIcon from "../../assets/images/checkmark1.png";
 
-
 const AddTask = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -23,6 +22,7 @@ const AddTask = () => {
   const [errors, setErrors] = useState({
     taskName: "",
     deadline: "",
+    description: ""
   });
 
   useEffect(() => {
@@ -38,32 +38,35 @@ const AddTask = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-   
     const newErrors = {
       taskName: '',
-      deadline: ''
+      deadline: '',
+      description: ''
     };
     
     if (!taskName.trim()) {
       newErrors.taskName = 'Please enter task name';
-    } else if (taskName.length < 10) {
-      newErrors.taskName = 'Task name must be at least 10 characters long';
     } else if (taskName.length > 30) {
       newErrors.taskName = 'Task name cannot exceed 30 characters';
     }
     
+    // Проверка на прошедшую дату
+    const selectedDate = new Date(deadline);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
     if (!deadline) {
       newErrors.deadline = 'Please select deadline';
+    } else if (selectedDate < today) {
+      newErrors.deadline = 'Deadline cannot be in the past';
     }
     
-    // If description is too long
     if (description && description.length > 100) {
       newErrors.description = 'Description cannot exceed 100 characters';
     }
     
     setErrors(newErrors);
     
-    // Check if there are any errors
     if (newErrors.taskName || newErrors.deadline || newErrors.description) {
       return;
     }
@@ -94,10 +97,12 @@ const AddTask = () => {
       });
     }
   };
+
   const handleOk = () => {
     setShowSuccess(false);
     navigate("/dashboard", { state: { shouldRefresh: Date.now() } });
   };
+
   const today = new Date().toISOString().split("T")[0];
 
   return (
@@ -143,11 +148,19 @@ const AddTask = () => {
 
           <textarea
             value={description}
-            onChange={(e) => setDescription(e.target.value)}
+            onChange={(e) => {
+              setDescription(e.target.value);
+              setErrors({ ...errors, description: "" });
+            }}
             placeholder="Enter task description..."
-            className={styles.descriptionInput}
+            className={`${styles.descriptionInput} ${
+              errors.description ? styles.errorInput : ""
+            }`}
             rows={6}
           />
+          {errors.description && (
+            <p className={styles.errorMessage}>{errors.description}</p>
+          )}
 
           <div className={styles.actionButtonsContainer}>
             <div className={styles.actionButtons}>
@@ -157,12 +170,13 @@ const AddTask = () => {
                 onClick={handleBack}
                 className={styles.leftIcon}
               />
-              <img
-                src={checkmarkIcon}
-                alt={isEditing ? "save changes" : "save"}
-                onClick={handleSubmit}
-                className={styles.checkmarkIcon}
-              />
+              <button type="submit" className={styles.submitButton}>
+                <img
+                  src={checkmarkIcon}
+                  alt={isEditing ? "save changes" : "save"}
+                  className={styles.checkmarkIcon}
+                />
+              </button>
             </div>
           </div>
         </form>

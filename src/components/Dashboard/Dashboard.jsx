@@ -11,48 +11,48 @@ import ProfileHeader from "../ProfileHeader/ProfileHeader";
 import eyesIcon from "/src/assets/images/eyes.png";
 import checkmarkIcon from "/src/assets/images/checkmark.png";
 import cancelIcon from "/src/assets/images/cancel.png";
-import arrowUpIcon from "/src/assets/images/arrow01.svg";
-import arrowDownIcon from "/src/assets/images/arrow02.svg";
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const dispatch = useDispatch();
   const { tasks } = useSelector((state) => state.tasks);
+  
   const [selectedTask, setSelectedTask] = useState(null);
   const [confirmationTask, setConfirmationTask] = useState(null);
   const [deleteConfirmationTask, setDeleteConfirmationTask] = useState(null);
-  const [currentPage, setCurrentPage] = useState(0);
+  const [editConfirmationTask, setEditConfirmationTask] = useState(null);
 
-  // Fetch tasks on component mount and when shouldRefresh changes
+  const isDeadlinePassed = (deadline) => {
+    if (!deadline) return false;
+    
+    const today = new Date();
+    const deadlineDate = new Date(deadline);
+    
+    today.setHours(0, 0, 0, 0);
+    deadlineDate.setHours(0, 0, 0, 0);
+    
+    return deadlineDate < today;
+  };
+
   useEffect(() => {
-    dispatch(
-      fetchTasks({
-        includeCompleted: false, // Only fetch active tasks
-      })
-    );
+    dispatch(fetchTasks({ includeCompleted: false }));
   }, [dispatch, location.state?.shouldRefresh]);
 
-  // Filter out completed tasks
-  const activeTasks = tasks.filter((task) => {
-    return !task.completed;
-  });
+  const activeTasks = tasks.filter((task) => !task.completed);
 
   const handleCompleteTask = async (taskId) => {
     try {
+      const now = new Date();
+      const today = now.toISOString().split('T')[0];
       await dispatch(
         updateTaskStatus({
           id: taskId,
           status: "COMPLETED",
+          completionDate: today 
         })
       ).unwrap();
-
-      await dispatch(
-        fetchTasks({
-          includeCompleted: false,
-        })
-      );
-
+      await dispatch(fetchTasks({ includeCompleted: false }));
       setConfirmationTask(null);
     } catch (error) {
       console.error("Error completing task:", error);
@@ -68,15 +68,6 @@ const Dashboard = () => {
     }
   };
 
-  const TASKS_PER_PAGE = 3;
-  const totalPages = Math.ceil(activeTasks.length / TASKS_PER_PAGE);
-  const startIndex = currentPage * TASKS_PER_PAGE;
-
-  const visibleTasks = activeTasks.slice(
-    startIndex,
-    startIndex + TASKS_PER_PAGE
-  );
-
   const handleEditTask = (task) => {
     navigate("/addtask", {
       state: {
@@ -84,18 +75,6 @@ const Dashboard = () => {
         isEditing: true,
       },
     });
-  };
-
-  const goToNextPage = () => {
-    if (currentPage < totalPages - 1) {
-      setCurrentPage(currentPage + 1);
-    }
-  };
-
-  const goToPrevPage = () => {
-    if (currentPage > 0) {
-      setCurrentPage(currentPage - 1);
-    }
   };
 
   const goToCompletedTasks = () => {
@@ -118,26 +97,14 @@ const Dashboard = () => {
         Add new task
       </button>
 
-      {tasks.length > TASKS_PER_PAGE && (
-        <button
-          className={`${styles.arrowButton} ${styles.arrowButtonTop}`}
-          onClick={goToPrevPage}
-          disabled={currentPage === 0}
-        >
-          <img
-            src={arrowUpIcon}
-            alt="Show previous tasks"
-            className={styles.arrowIcon}
-          />
-        </button>
-      )}
-
-      <div className={styles.taskList}>
-        {visibleTasks.map((task) => (
+      <div className={styles.scrollableTaskList}>
+        {activeTasks.map((task) => (
           <div key={task.id} className={styles.taskRow}>
             <div
-              className={`${styles.taskButton} ${styles.taskText}`}
-              onClick={() => handleEditTask(task)}
+              className={`${styles.taskButton} ${styles.taskText} ${
+                isDeadlinePassed(task.deadline) ? styles.overdueTask : ""
+              }`}
+              onClick={() => setEditConfirmationTask(task)}
             >
               {task.name}
             </div>
@@ -171,41 +138,28 @@ const Dashboard = () => {
         ))}
       </div>
 
-      {tasks.length > TASKS_PER_PAGE && (
-        <button
-          className={`${styles.arrowButton} ${styles.arrowButtonBottom}`}
-          onClick={goToNextPage}
-          disabled={currentPage >= totalPages - 1}
-        >
-          <img
-            src={arrowDownIcon}
-            alt="Show next tasks"
-            className={styles.arrowIcon}
-          />
-        </button>
-      )}
       <button className={styles.completedButton} onClick={goToCompletedTasks}>
         Completed tasks
       </button>
 
       <div className={styles.footerText}>family planner</div>
 
+      {/* Modal for viewing task details */}
       {selectedTask && (
-        <div
-          className={styles.modalOverlay}
-          onClick={() => setSelectedTask(null)}
-        >
+        <div className={styles.modalOverlay} onClick={() => setSelectedTask(null)}>
           <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
             <h3 className={styles.modalTitle}>{selectedTask.name}</h3>
-            <p className={styles.modalText}>
-              <span style={{ fontWeight: "bold" }}>Description:</span>
-              <br />
-              {selectedTask.description || "No description provided"}
-            </p>
-            <p className={styles.modalText}>
-              <span style={{ fontWeight: "bold" }}>Deadline:</span>{" "}
-              {selectedTask.deadline}
-            </p>
+            <div className={styles.modalContent}>
+              <p className={styles.modalText}>
+                <span style={{ fontWeight: "bold" }}>Description:</span>
+                <br />
+                {selectedTask.description || "No description provided"}
+              </p>
+              <p className={styles.modalText}>
+                <span style={{ fontWeight: "bold" }}>Deadline:</span>{" "}
+                {selectedTask.deadline}
+              </p>
+            </div>
             <button
               className={styles.okButton}
               onClick={() => setSelectedTask(null)}
@@ -216,11 +170,9 @@ const Dashboard = () => {
         </div>
       )}
 
+      {/* Modal for completing task confirmation */}
       {confirmationTask && (
-        <div
-          className={styles.modalOverlay}
-          onClick={() => setConfirmationTask(null)}
-        >
+        <div className={styles.modalOverlay} onClick={() => setConfirmationTask(null)}>
           <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
             <h3 className={styles.modalTitle}>Confirm completion</h3>
             <p className={styles.modalText}>
@@ -244,11 +196,9 @@ const Dashboard = () => {
         </div>
       )}
 
+      {/* Modal for deleting task confirmation */}
       {deleteConfirmationTask && (
-        <div
-          className={styles.modalOverlay}
-          onClick={() => setDeleteConfirmationTask(null)}
-        >
+        <div className={styles.modalOverlay} onClick={() => setDeleteConfirmationTask(null)}>
           <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
             <h3 className={styles.modalTitle}>Confirm deletion</h3>
             <p className={styles.modalText}>
@@ -264,6 +214,35 @@ const Dashboard = () => {
               <button
                 className={`${styles.okButton} ${styles.noButton}`}
                 onClick={() => setDeleteConfirmationTask(null)}
+              >
+                No
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal for editing task confirmation */}
+      {editConfirmationTask && (
+        <div className={styles.modalOverlay} onClick={() => setEditConfirmationTask(null)}>
+          <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+            <h3 className={styles.modalTitle}>Confirm editing</h3>
+            <p className={styles.modalText}>
+              Do you want to edit "{editConfirmationTask.name}"?
+            </p>
+            <div className={styles.confirmationButtons}>
+              <button
+                className={`${styles.okButton} ${styles.yesButton}`}
+                onClick={() => {
+                  handleEditTask(editConfirmationTask);
+                  setEditConfirmationTask(null);
+                }}
+              >
+                Yes
+              </button>
+              <button
+                className={`${styles.okButton} ${styles.noButton}`}
+                onClick={() => setEditConfirmationTask(null)}
               >
                 No
               </button>

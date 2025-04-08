@@ -1,12 +1,10 @@
 @import url('https://fonts.googleapis.com/css2?family=Original+Surfer&family=Inika&display=swap');
 
-
 html {
   height: 100%;
   margin: 0;
   padding: 0;
 }
-
 
 body {
   margin: 0;
@@ -16,15 +14,9 @@ body {
   width: 100%;
 }
 
-/* .content-wrapper {
-  max-width: 630px;
-  margin: 0 auto;
-} */
-
 .calendar-page {
   width: 100vw;
   min-height: 100vh;
-  
   background: linear-gradient(to bottom, #60E8F5,#D1CB84, #E9FC5F);
   border-radius: 0px;
   padding: 20px;
@@ -62,14 +54,12 @@ body {
   box-shadow: 0 4px 6px rgba(0,0,0,0.1);
 }
 
-
 .user-info {
   display: flex;
   flex-direction: column;
   gap: 6px;
   margin-top: 35px;
 }
-
 
 .username-field {
   background-color: white;
@@ -114,11 +104,10 @@ body {
   top: 10px;
   right: 10px;
   z-index: 2;
-  transform: translate(0, 0); /* Убираем выход за границы */
+  transform: translate(0, 0);
   margin-right: 25px;
   margin-top: 40px;
 }
-
 
 .logout-button:hover {
   background-color: #74c0e0;
@@ -144,10 +133,9 @@ body {
   border-radius: 20px;
   padding: 10px;
   width: 100%;
-  max-width: 420px; /* ширина для мобилок */
+  max-width: 420px;
   margin: 0 auto;
   box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-  
 }
 
 .calendar-header {
@@ -209,7 +197,6 @@ body {
   padding: 5px;
 }
 
-
 .calendar-cell {
   background-color: white;
   border-radius: 10px;
@@ -224,7 +211,6 @@ body {
   box-sizing: border-box;
   position: relative;
   overflow: hidden;
-  
 }
 
 .task-bubble-wrapper {
@@ -235,107 +221,16 @@ body {
 
 .task-bubble {
   background-color: #b5e9ff;
-  color: #003366;
   border-radius: 8px;
-  padding: 1px 5px;
-  margin: 1px 0;
-  font-size: 8px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 100%;
-  box-sizing: border-box;
+  height: 8px;
+  width: 8px;
+  margin: 2px;
+  display: inline-block;
   cursor: pointer;
 }
 
-.tooltip {
-  visibility: hidden;
-  opacity: 0;
-  background-color: #333;
-  color: #fff;
-  text-align: center;
-  font-size: 12px;
-  border-radius: 5px;
-  padding: 4px 8px;
-  position: absolute;
-  z-index: 9999;
-  bottom: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-  white-space: nowrap;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-  transition: opacity 0.2s;
-  pointer-events: none;
-}
-
-.task-bubble-wrapper:hover .tooltip {
-  visibility: visible;
-  opacity: 1;
-}
-
-.back-section {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-top: 0px;
-}
-
-.back-arrow-img {
-    width: 80px;
-    height: 80px;
-    cursor: pointer;
-    transition: transform 0.2s ease;
-  }
-  
-  .back-arrow-img:hover {
-    transform: scale(1.05);
-  }
-  
-
-.footer-title {
-  margin-top: 10px;
-  font-size: 15px;
-  color: #645270;
-  letter-spacing: 2px;
-  font-family: 'Inika', serif;
-  text-align: center;
-  position: relative;
-  width: 100%;
-  margin-bottom: 20px;
-}
-  
-
-@media (max-width: 480px) {
-  .calendar-box {
-    max-width: 100%;
-    padding: 8px;
-  }
-
-  .calendar-cell {
-    height: 45px;
-    font-size: 11px;
-  }
-
-  .task-bubble {
-    font-size: 6px;
-  }
-
-  .completed-tasks-title {
-    font-size: 16px;
-    padding: 6px;
-  }
-
-  .calendar-header {
-    font-size: 18px;
-    gap: 8px;
-  }
-}
-
-/* Add these styles to src/components/Calendar/Calendar.css */
-
 .task-bubble.completed-task {
-  background-color: #4CAF50; /* Green background for completed tasks */
-  color: white;
+  background-color: #4CAF50;
 }
 
 .task-count {
@@ -356,16 +251,111 @@ body {
   font-weight: bold;
 }
 
-.more-tasks {
-  font-size: 8px;
-  color: #666;
-  text-align: center;
-  font-style: italic;
-  margin-top: 2px;
+.back-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 0px;
 }
 
-/* Make the tooltip more informative */
-.tooltip {
-  min-width: 120px;
+.back-arrow-img {
+  width: 80px;
+  height: 80px;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.back-arrow-img:hover {
+  transform: scale(1.05);
+}
+
+.footer-title {
+  margin-top: 10px;
+  font-size: 15px;
+  color: #645270;
+  letter-spacing: 2px;
+  font-family: 'Inika', serif;
   text-align: center;
+  position: relative;
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+@media (max-width: 480px) {
+  .calendar-box {
+    max-width: 100%;
+    padding: 8px;
+  }
+
+  .calendar-cell {
+    height: 45px;
+    font-size: 11px;
+  }
+
+  .completed-tasks-title {
+    font-size: 16px;
+    padding: 6px;
+  }
+
+  .calendar-header {
+    font-size: 18px;
+    gap: 8px;
+  }
+}
+
+/* Modal styles */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal {
+  background: white;
+  padding: 30px;
+  border-radius: 20px;
+  width: 90%;
+  max-width: 300px;
+  text-align: center;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.modalTitle {
+  font-size: 20px;
+  margin-bottom: 10px;
+  letter-spacing: 2px;
+  color: #01578F;
+  font-family: 'Original Surfer', cursive;
+}
+
+.modalText {
+  font-size: 16px;
+  margin-bottom: 8px;
+  color: #01578F;
+  font-family: 'Original Surfer', cursive;
+}
+
+.okButton {
+  margin-top: 10px;
+  background: #19FEA6;
+  color: #01578F;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 30px;
+  cursor: pointer;
+  font-size: 16px;
+  font-family: 'Original Surfer', cursive;
+  font-weight: bold;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.okButton:hover {
+  background: #15e895;
 }
