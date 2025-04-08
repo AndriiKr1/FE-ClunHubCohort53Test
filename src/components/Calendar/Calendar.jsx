@@ -64,16 +64,18 @@ const Calendar = () => {
 
     tasks.forEach((task) => {
       const isCompleted = task.status === "COMPLETED" || task.completed;
-      // Використовуємо дату завершення для виконаних завдань
-      const dateKey = isCompleted
-        ? task.completionDate?.split("T")[0] || todayDate
-        : task.deadline?.split("T")[0];
 
-      if (dateKey) {
-        if (!tasksByDate[dateKey]) {
-          tasksByDate[dateKey] = [];
+      // Only process completed tasks
+      if (isCompleted) {
+        // Use the completion date for completed tasks
+        const dateKey = task.completionDate?.split("T")[0] || todayDate;
+
+        if (dateKey) {
+          if (!tasksByDate[dateKey]) {
+            tasksByDate[dateKey] = [];
+          }
+          tasksByDate[dateKey].push(task);
         }
-        tasksByDate[dateKey].push(task);
       }
     });
 
@@ -81,20 +83,20 @@ const Calendar = () => {
   }, [tasks]);
 
   const handleTaskClick = (day) => {
-    const paddedMonth = (currentMonth + 1).toString().padStart(2, '0');
-    const paddedDay = day.toString().padStart(2, '0');
+    const paddedMonth = (currentMonth + 1).toString().padStart(2, "0");
+    const paddedDay = day.toString().padStart(2, "0");
     const dateStr = `${currentYear}-${paddedMonth}-${paddedDay}`;
-    
+
     // Check if there are tasks for this date
     const tasksForDate = getTasksForDay(day);
-    
+
     if (tasksForDate.length === 0) {
       // Show popup message instead of navigating
       setNoTasksDate(dateStr);
     } else {
       // Navigate as usual
-      localStorage.setItem('selectedDate', dateStr);
-      navigate('/completed');
+      localStorage.setItem("selectedDate", dateStr);
+      navigate("/completed");
     }
   };
 
@@ -142,7 +144,14 @@ const Calendar = () => {
 
   return (
     <div className="calendar-page">
-      <div className="top-header">
+      <div
+        style={{
+          width: "100%",
+          display: "flex",
+          justifyContent: "center",
+          marginBottom: "20px",
+        }}
+      >
         <ProfileHeader />
       </div>
 
@@ -151,25 +160,23 @@ const Calendar = () => {
       {error && <div className="error-message">{error}</div>}
 
       {noTasksDate && (
-      <div className="modalOverlay" onClick={() => setNoTasksDate(null)}>
-        <div className="modal" onClick={(e) => e.stopPropagation()}>
-          <h3 className="modalTitle">No Tasks</h3>
-          <p className="modalText">
-            No completed tasks for {new Date(noTasksDate).toLocaleDateString('en-US', {
-              year: 'numeric',
-              month: 'long',
-              day: 'numeric'
-            })}
-          </p>
-          <button 
-            className="okButton" 
-            onClick={() => setNoTasksDate(null)}
-          >
-            OK
-          </button>
+        <div className="modalOverlay" onClick={() => setNoTasksDate(null)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <h3 className="modalTitle">No Tasks</h3>
+            <p className="modalText">
+              No completed tasks for{" "}
+              {new Date(noTasksDate).toLocaleDateString("en-US", {
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+              })}
+            </p>
+            <button className="okButton" onClick={() => setNoTasksDate(null)}>
+              OK
+            </button>
+          </div>
         </div>
-      </div>
-    )}
+      )}
 
       <div className="calendar-box">
         <div className="calendar-header">

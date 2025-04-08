@@ -43,7 +43,7 @@ body {
   box-shadow: 0 2px 5px rgba(0,0,0,0.2);
 }
 
-.user-profile {
+/* .user-profile {
   display: flex;
 }
 
@@ -81,7 +81,7 @@ body {
 .age-field {
   width: 120px;
   margin-left: 50px;
-}
+} */
 
 .date-title {
   background-color: #8AF3FF;
