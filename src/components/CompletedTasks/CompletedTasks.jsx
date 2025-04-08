@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchTasks, updateTaskStatus } from "../../store/slices/taskSlice";
+import { fetchTasks} from "../../store/slices/taskSlice";
 import { formatDateForApi } from "../../utils/dataMappers";
 import ProfileHeader from "../ProfileHeader/ProfileHeader";
 import leftArrow from "../../assets/images/left.png";
@@ -92,29 +92,29 @@ const CompletedTasks = () => {
     }
   };
 
-  const toggleTaskCompletion = async (taskId, completed) => {
-    try {
-      const newStatus = completed ? "IN_PROGRESS" : "COMPLETED";
+  // const toggleTaskCompletion = async (taskId, completed) => {
+  //   try {
+  //     const newStatus = completed ? "IN_PROGRESS" : "COMPLETED";
 
-      await dispatch(
-        updateTaskStatus({
-          id: taskId,
-          status: newStatus,
-        })
-      ).unwrap();
+  //     await dispatch(
+  //       updateTaskStatus({
+  //         id: taskId,
+  //         status: newStatus,
+  //       })
+  //     ).unwrap();
 
-      await fetchTasksForDate(selectedDate);
-    } catch (error) {
-      console.error("Error toggling task completion:", error);
-    }
-  };
+  //     await fetchTasksForDate(selectedDate);
+  //   } catch (error) {
+  //     console.error("Error toggling task completion:", error);
+  //   }
+  // };
 
   const completedTasks = displayTasks.filter(
     (task) => task.completed || task.status === "COMPLETED"
   );
-  const activeTasks = displayTasks.filter(
-    (task) => !task.completed && task.status !== "COMPLETED"
-  );
+  // const activeTasks = displayTasks.filter(
+  //   (task) => !task.completed && task.status !== "COMPLETED"
+  // );
 
   return (
     <div className="completed-page">
@@ -148,7 +148,7 @@ const CompletedTasks = () => {
                   <div
                     className="task-card completed"
                     key={task.id}
-                    onClick={() => toggleTaskCompletion(task.id, true)}
+                    //onClick={() => toggleTaskCompletion(task.id, true)}
                   >
                     <span className="task-status-indicator">✓ </span>
                     {task.title || task.name || "Untitled Task"}
@@ -161,7 +161,7 @@ const CompletedTasks = () => {
             </>
           )}
 
-          {/* Show active tasks */}
+          {/* Show active tasks
           {activeTasks.length > 0 && (
             <>
               <h4 className="subsection-title">Active Tasks</h4>
@@ -170,7 +170,7 @@ const CompletedTasks = () => {
                   <div
                     className="task-card"
                     key={task.id}
-                    onClick={() => toggleTaskCompletion(task.id, false)}
+                   // onClick={() => toggleTaskCompletion(task.id, false)}
                   >
                     <span className="task-status-indicator"></span>
                     {task.title || task.name || "Untitled Task"}
@@ -181,7 +181,7 @@ const CompletedTasks = () => {
                 ))}
               </div>
             </>
-          )}
+          )} */}
         </>
       )}
 

@@ -191,12 +191,12 @@ export const updateTaskStatus = createAsyncThunk(
 // Видалення завдання
 export const deleteTask = createAsyncThunk(
   "tasks/deleteTask",
-  async (taskId, { rejectWithValue, dispatch }) => {
+  async (taskId, { rejectWithValue}) => {
     try {
       await axios.delete(`/api/tasks?id=${taskId}`);
 
       // Оновлення списку завдань
-      await dispatch(fetchTasks()).unwrap();
+     // await dispatch(fetchTasks()).unwrap();
 
       return taskId;
     } catch (error) {
@@ -334,7 +334,33 @@ const taskSlice = createSlice({
       .addCase(updateTaskStatus.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
-      });
+      })
+      .addCase(deleteTask.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(deleteTask.fulfilled, (state, action) => {
+        state.loading = false;
+        
+        // Get the deleted task ID
+        const taskId = action.payload;
+        
+        // Remove from tasks array
+        state.tasks = state.tasks.filter(task => task.id !== taskId);
+        
+        // Remove from tasksByDate
+        for (let dateKey in state.tasksByDate) {
+          state.tasksByDate[dateKey] = state.tasksByDate[dateKey].filter(task => task.id !== taskId);
+          
+          // Clean up empty arrays
+          if (state.tasksByDate[dateKey].length === 0) {
+            delete state.tasksByDate[dateKey];
+          }
+        }
+      })
+      .addCase(deleteTask.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
   },
 });
 

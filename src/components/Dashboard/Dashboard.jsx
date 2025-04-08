@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
+import { formatDateForApi } from "../../utils/dataMappers";
 import {
   deleteTask,
   fetchTasks,
@@ -11,6 +12,7 @@ import ProfileHeader from "../ProfileHeader/ProfileHeader";
 import eyesIcon from "/src/assets/images/eyes.png";
 import checkmarkIcon from "/src/assets/images/checkmark.png";
 import cancelIcon from "/src/assets/images/cancel.png";
+
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -36,7 +38,23 @@ const Dashboard = () => {
   };
 
   useEffect(() => {
-    dispatch(fetchTasks({ includeCompleted: false }));
+    // Get today's date
+    const today = new Date();
+    
+    // Calculate a date range that includes the future (e.g., 1 year from now)
+    const startDate = formatDateForApi(today);
+    
+    // One year from now
+    const futureDate = new Date(today);
+    futureDate.setFullYear(today.getFullYear() + 1);
+    const endDate = formatDateForApi(futureDate);
+    
+    // Fetch tasks with this extended date range
+    dispatch(fetchTasks({ 
+      fromDate: startDate,
+      toDate: endDate,
+      includeCompleted: false 
+    }));
   }, [dispatch, location.state?.shouldRefresh]);
 
   const activeTasks = tasks.filter((task) => !task.completed);
@@ -59,6 +77,28 @@ const Dashboard = () => {
     }
   };
 
+  // const handleDeleteTask = async (taskId) => {
+  //   try {
+  //     await dispatch(deleteTask(taskId)).unwrap();
+      
+  //     // Explicitly fetch tasks again with the same date range
+  //     const today = new Date();
+  //     const startDate = formatDateForApi(today);
+  //     const futureDate = new Date(today);
+  //     futureDate.setFullYear(today.getFullYear() + 1);
+  //     const endDate = formatDateForApi(futureDate);
+      
+  //     await dispatch(fetchTasks({ 
+  //       fromDate: startDate,
+  //       toDate: endDate,
+  //       includeCompleted: false 
+  //     }));
+      
+  //     setDeleteConfirmationTask(null);
+  //   } catch (error) {
+  //     console.error("Error deleting task:", error);
+  //   }
+  // };
   const handleDeleteTask = async (taskId) => {
     try {
       await dispatch(deleteTask(taskId)).unwrap();
