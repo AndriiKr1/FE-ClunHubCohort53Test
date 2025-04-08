@@ -73,7 +73,6 @@ const RegisterPage = () => {
       newErrors.username = "Username should have at least 2 symbols";
     } else if (formData.username.trim().length > 15) {
       newErrors.username = "Username can't be more than 15 symbols";
-    
     }
 
     if (!formData.age.trim()) {
@@ -96,22 +95,21 @@ const RegisterPage = () => {
     }
 
     if (!formData.password.trim()) {
-    newErrors.password = "Password is required";
-  } else if (formData.password.length < 8) {
-    newErrors.password = "Password must be at least 8 characters";
-  } else if (formData.password.length > 25) {
-    newErrors.password = "Password must not exceed 25 characters";
-  } else if (!/^[A-Za-z0-9!@#$%^&*()_+[\]{};':"\\|,.<>/?-]+$/.test(formData.password)) {
-    newErrors.password = "Only Latin letters, numbers and symbols are allowed";
+      newErrors.password = "Password is required";
+    } else if (formData.password.length < 8) {
+      newErrors.password = "Password must be at least 8 characters";
+    } else if (formData.password.length > 25) {
+      newErrors.password = "Password must not exceed 25 characters";
+    } else if (!/^[A-Za-z0-9!@#$%^&*()_+[\]{};':"\\|,.<>/?-]+$/.test(formData.password)) {
+      newErrors.password = "Only Latin letters, numbers and symbols are allowed";
     } else if (
-      !/[a-z]/.test(formData.password) || // нет маленькой буквы
-      !/[A-Z]/.test(formData.password) || // нет заглавной буквы
-      !/[0-9]/.test(formData.password) || // нет цифры
-      !/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(formData.password) // нет символа
+      !/[a-z]/.test(formData.password) || 
+      !/[A-Z]/.test(formData.password) || 
+      !/[0-9]/.test(formData.password) || 
+      !/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(formData.password)
     ) {
       newErrors.password = "Password must include uppercase, lowercase, number and special character";
     }
-    
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -187,11 +185,13 @@ const RegisterPage = () => {
                 ? (
                   <>
                     <span>Avatar selected</span>
-                    <img
-                      src={avatarOptions.find(a => a.id === formData.avatar)?.image}
-                      alt="Selected Avatar"
-                      style={{ width: '40px', height: '40px', borderRadius: '50%' }}
-                    />
+                    <div className={styles.avatarPreviewContainer}>
+                      <img
+                        src={avatarOptions.find(a => a.id === formData.avatar)?.image}
+                        alt="Selected Avatar"
+                        className={styles.avatarPreview}
+                      />
+                    </div>
                   </>
                 )
                 : "Choose your avatar..."}
@@ -261,8 +261,10 @@ const RegisterPage = () => {
               ))}
             </div>
             <button 
-            id="avatar-cancel-btn"
-            className={styles.cancelButton} onClick={() => setShowAvatarModal(false)}>
+              id="avatar-cancel-btn"
+              className={styles.cancelButton} 
+              onClick={() => setShowAvatarModal(false)}
+            >
               Cancel
             </button>
           </div>

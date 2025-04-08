@@ -126,7 +126,7 @@ const AddTask = () => {
           <p className={styles.errorMessage}>{errors.taskName}</p>
         )}
 
-        <form onSubmit={handleSubmit} className={styles.taskForm}>
+        <form onSubmit={handleSubmit} className={styles.taskForm} noValidate>
           <div className={styles.deadlineContainer}>
             <span className={styles.deadlineLabel}>Deadline:</span>
             <input

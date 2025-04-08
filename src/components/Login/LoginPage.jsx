@@ -57,26 +57,39 @@ const LoginPage = () => {
     }
   
     setIsLoading(true);
+    setErrors({});
   
     try {
-      await dispatch(loginUser(formData)).unwrap();
-      navigate("/dashboard");
-    } catch (error) {     
+      const result = await dispatch(loginUser(formData)).unwrap();
+      
+      // Only navigate if the login was successful and we have a token
+      if (result && result.token) {
+        navigate("/dashboard");
+      } else {
+        // This should theoretically never happen, but just in case
+        setErrors({
+          submit: "An unexpected error occurred. Please try again."
+        });
+      }
+    } catch (error) {  
+      console.error("Login error:", error);
+      
+      // Handle various error types
       if (error === "user_not_found") {
         setErrors({
-          submit: "Email is not registered. Please check your email or create an account."
+          submit: "Invalid User"
         });
       } else if (error === "invalid_credentials") {
         setErrors({
-          submit: "Incorrect password. Please try again."
+          submit: "Incorrect email or password. Please try again."
         });
-      } else if (error.includes("server")) {
+      } else if (error === "server_unreachable" || (typeof error === 'string' && error.includes("server"))) {
         setErrors({
           submit: "Server is temporarily unavailable. Please try again later."
         });
       } else {
         setErrors({
-          submit: error.message || "Login failed. Please try again."
+          submit: "Login failed. Please check your credentials and try again."
         });
       }
     } finally {
@@ -88,6 +101,7 @@ const LoginPage = () => {
     e.preventDefault(); 
     navigate("/forgot-password"); 
   };
+
 
 
   return (

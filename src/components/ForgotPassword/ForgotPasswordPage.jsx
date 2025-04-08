@@ -19,6 +19,7 @@ const ForgotPasswordPage = () => {
   const [remainingTime, setRemainingTime] = useState(120);
   const [canResend, setCanResend] = useState(false);
   const [isCodeExpired, setIsCodeExpired] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
 
   const isSubmitting = isLoading || passwordReset.isLoading;
 
@@ -51,17 +52,26 @@ const ForgotPasswordPage = () => {
   }, [step, remainingTime]);
 
   useEffect(() => {
+    
     if (passwordReset.error) {
       if (passwordReset.error === "code_expired") {
         setIsCodeExpired(true);
-        setError("Код підтвердження втратив чинність. Запросіть новий код.");
+        setError("The verification code has expired. Request a new code.");
       } else if (passwordReset.error === "invalid_token") {
-        setError("Введений код підтвердження невірний.");
+        setError("The verification code you entered is incorrect.");
       } else {
         setError(passwordReset.error);
       }
     }
-  }, [passwordReset.error]);
+      
+    if (passwordReset.isLinkSent && step === "email") {
+      setSuccessMessage("Reset code sent! Please check your email.");
+      setTimeout(() => {
+        setStep("code");
+        setSuccessMessage("");
+      }, 2000);
+    }
+  }, [passwordReset.error, passwordReset.isLinkSent, step]);
 
   useEffect(() => {
     if (step === "code") {
@@ -117,6 +127,7 @@ const ForgotPasswordPage = () => {
     setCanResend(false);
     setRemainingTime(120);
     setCode("");
+    setError("");
     dispatch(requestPasswordReset(email));
   };
 
@@ -141,32 +152,42 @@ const ForgotPasswordPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-
+  
     if (step === "email") {
-      // Валідація email
+      // Email validation
       if (!email.trim()) {
         setError("Please enter an email address");
         return;
       }
-
+  
       // Email validation regex
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(email.trim())) {
         setError("Please enter a valid email address");
         return;
       }
-
+  
       try {
+        setSuccessMessage(""); 
+        
         await dispatch(requestPasswordReset(email)).unwrap();
-        setStep("code");
+        
+        // If unwrap() succeeds, it means the request was successful
+        setSuccessMessage("Reset code sent! Please check your email.");
+        setTimeout(() => {
+          setStep("code");
+          setSuccessMessage("");
+        }, 2000);
+        
       } catch (error) {
-        // Специфічна обробка помилок
+        // Handle specific error scenarios
         if (error === "User is not registered") {
           setError("This email is not registered in our system");
         } else if (error === "Invalid email format") {
           setError("Please enter a valid email address");
         } else {
-          setError(error || "Failed to send reset code");
+          // Generic error handling
+          setError(error || "Failed to send reset code. Please try again later.");
         }
       }
     } else if (step === "code") {
@@ -193,8 +214,13 @@ const ForgotPasswordPage = () => {
             confirmPassword: repeatPassword,
           })
         ).unwrap();
-        navigate("/login");
+        
+        setSuccessMessage("Password successfully reset!");
+        setTimeout(() => {
+          navigate("/login");
+        }, 2000);
       } catch (error) {
+        // Handle password reset errors
         setError(error.message || "Failed to reset password");
       }
     }
@@ -209,6 +235,11 @@ const ForgotPasswordPage = () => {
         <h2 className={styles.title}>
           {step === "email" ? "Recover password" : step === "code" ? "Enter the code from the email" : "Create a new password"}
         </h2>
+        
+        {successMessage && (
+          <div className={styles.successMessage}>{successMessage}</div>
+        )}
+        
         <form className={styles.form} onSubmit={handleSubmit} noValidate>
           {step === "email" && (
             <>
@@ -303,14 +334,33 @@ const ForgotPasswordPage = () => {
           )}
           {error && <span className={styles.error}>{error}</span>}
           <button 
-          id="submit-btn" 
-          type="submit" className={styles.submitButton} disabled={isSubmitting }>
+            id="submit-btn" 
+            type="submit" 
+            className={styles.submitButton} 
+            disabled={isSubmitting}
+          >
             {isSubmitting ? "Submitting..." : step === "email" ? "Send reset code" : "Next"}
-           
           </button>
         </form>
+        
+        {/* Back to login link */}
+        <div className={styles.backToLoginContainer}>
+          <a 
+            href="#" 
+            onClick={(e) => {
+              e.preventDefault();
+              navigate("/login");
+            }}
+            className={styles.backToLoginLink}
+          >
+            Back to login
+          </a>
+        </div>
+        
       </div>
+      <div className={styles.footerText}>family planner</div>
     </div>
+    
   );
 };
 

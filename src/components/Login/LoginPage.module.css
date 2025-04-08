@@ -11,6 +11,7 @@
     box-sizing: border-box;
     padding: 20px;
     overflow-x: hidden; 
+    position: relative; /* Для коректного позиціонування футера */
   }
 
   .content {
@@ -22,7 +23,6 @@
     padding: 20px 10px; 
     box-sizing: border-box;
     margin-top: 2vh; 
-   
   }
 
   .logoContainer {
@@ -131,6 +131,7 @@
     margin-top: 10px;
   }
 
+  /* Футер - зберігаємо оригінальні стилі для десктопу */
   .footerText {
     width: 100%;
     font-family: 'Inika', serif;
@@ -139,11 +140,12 @@
     color: #645270;
     letter-spacing: 2px;
     padding: 10px 0;
-    position: absolute; 
+    position: absolute; /* Зберігаємо absolute для десктопа */
     bottom: 30px; 
     left: 0; 
   }
 
+  /* Стилі для мобільних пристроїв */
   @media (max-width: 480px) {
     .content {
       padding: 10px 5px;
@@ -164,8 +166,31 @@
       padding: 10px 14px;
       max-width: 260px;
     }
+    
+    /* Спеціальні стилі для мобільних пристроїв */
+    /* Перевіряємо якщо пристрій підтримує touch-events (тачскрін) */
+    @media (pointer: coarse) {
+      /* Змінюємо стиль футера тільки для мобільних пристроїв */
+      .footerText {
+        position: relative; /* Змінюємо з absolute на relative для мобільних */
+        bottom: auto;       /* Знімаємо фіксоване позиціонування знизу */
+        margin-top: 20px;   /* Додаємо відступ зверху */
+      }
+      
+      /* Змінюємо вирівнювання контейнера для мобільних */
+      .loginContainer {
+        justify-content: flex-start;
+        padding-top: 50px;
+        padding-bottom: 30px;
+      }
+      
+      .content {
+        margin-bottom: 30px; /* Додаємо відступ для контенту знизу */
+      }
+    }
   }
 
+  /* Стилі для планшетів - залишаємо без змін */
   @media (min-width: 481px) and (max-width: 768px) {
     .logo {
       width: 45%;
@@ -181,6 +206,7 @@
     }
   }
 
+  /* Стилі для великих екранів - залишаємо без змін */
   @media (min-width: 1025px) {
     .content {
       max-width: 600px;
@@ -199,4 +225,34 @@
     .input {
       font-size: 18px;
     }
+  }
+
+  /* Стилі для кнопки показу пароля */
+  .passwordInputWrapper {
+    position: relative;
+    width: 100%;
+  }
+
+  .showPasswordButton {
+    position: absolute;
+    top: 50%;
+    right: 15px;
+    transform: translateY(-50%);
+    background: transparent;
+    border: none;
+    color: #777;
+    font-family: 'Original Surfer', serif;
+    font-size: 14px;
+    cursor: pointer;
+    padding: 5px;
+    z-index: 2;
+  }
+
+  .showPasswordButton:hover {
+    color: #01578F;
+  }
+
+  /* Коригуємо padding для поля пароля */
+  .passwordInputWrapper .input {
+    padding-right: 70px;
   }

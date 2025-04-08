@@ -42,7 +42,7 @@ const ProfileHeader = () => {
    const confirmLogout = () => {
     dispatch(logout());
     localStorage.removeItem('token');
-    navigate('/login');
+    navigate('/');
     setShowLogoutConfirm(false);
   };
 
@@ -91,7 +91,7 @@ const ProfileHeader = () => {
         <div className={styles.noUserInfo}>
           <button 
             className={styles.loginButton}
-            onClick={() => navigate('/login')}
+            onClick={() => navigate('/')}
           >
             Log in
           </button>

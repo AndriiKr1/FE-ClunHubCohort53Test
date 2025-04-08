@@ -13,13 +13,17 @@ axios.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Response interceptor - handle authentication errors
 axios.interceptors.response.use(
   response => response,
   error => {
-    if (error.response?.status === 401) {
-      localStorage.removeItem('token');
-      window.location.href = '/login';
+    // Only redirect to login if we have a token and get 401
+    // Don't redirect when we're already on login/registration/forgot-password pages
+    if (error.response?.status === 401 && localStorage.getItem('token')) {
+      const currentPath = window.location.pathname;
+      if (!['/login', '/register', '/forgot-password', '/'].includes(currentPath)) {
+        localStorage.removeItem('token');
+        window.location.href = '/login';
+      }
     }
     return Promise.reject(error);
   }

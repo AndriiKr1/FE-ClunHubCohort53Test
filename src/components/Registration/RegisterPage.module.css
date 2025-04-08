@@ -71,7 +71,7 @@
 /* Ошибки */
 .error {
   color: #ff0000;
-font-family: 'Original Surfer', cursive;
+  font-family: 'Original Surfer', cursive;
   font-size: 14px;
   margin-top: 8px; 
   display: block;
@@ -147,10 +147,9 @@ font-family: 'Original Surfer', cursive;
   padding: 20px;
   text-align: center;
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
-  max-width: 260px; /* было 360px */
+  max-width: 260px;
   width: 90%;
 }
-
 
 .modalTitle {
   font-family: 'Original Surfer', cursive;
@@ -207,3 +206,23 @@ font-family: 'Original Surfer', cursive;
   background-color: #93e7f0;
   transform: scale(1.05);
 }
+
+/* Контейнер для превью аватара */
+.avatarPreviewContainer {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #f0f0f0;
+}
+
+/* Превью аватара */
+.avatarPreview {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+

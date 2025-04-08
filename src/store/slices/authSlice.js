@@ -25,13 +25,21 @@ export const loginUser = createAsyncThunk(
   async (userData, { rejectWithValue }) => {
     try {
       const response = await axios.post(`/api/auth/sign-in`, userData);
+
+      // Make sure the response contains the expected data
+      if (!response.data || !response.data.token || !response.data.user) {
+        return rejectWithValue("invalid_response_format");
+      }
+
       return response.data;
     } catch (error) {
       if (error.response) {
-        // Server returned an error response
         if (error.response.status === 404) {
           return rejectWithValue("user_not_found");
-        } else if (error.response.status === 401) {
+        } else if (
+          error.response.status === 401 ||
+          error.response.status === 403
+        ) {
           return rejectWithValue("invalid_credentials");
         } else {
           return rejectWithValue(
@@ -39,10 +47,8 @@ export const loginUser = createAsyncThunk(
           );
         }
       } else if (error.request) {
-        // Request made but no response received
         return rejectWithValue("server_unreachable");
       } else {
-        // Something else happened while setting up the request
         return rejectWithValue("network_error");
       }
     }
@@ -54,28 +60,24 @@ export const requestPasswordReset = createAsyncThunk(
   async (email, { rejectWithValue }) => {
     try {
       const response = await axios.post(`/api/auth/forgot-password`, { email });
+
+      // Check the success flag in the response
+      if (response.data.success === false) {
+        return rejectWithValue(response.data.message || "User is not registered");
+      }
+
       return response.data;
     } catch (error) {
       if (error.response) {
-        // Handle specific error scenarios
-        switch (error.response.status) {
-          case 404:
-            // User not found
-            return rejectWithValue("User is not registered");
-          case 400:
-            // Invalid email format
-            return rejectWithValue("Please enter a valid email address");
-          default:
-            return rejectWithValue(
-              error.response.data.message || "Failed to request password reset"
-            );
-        }
+        // If the server returns an error response
+        const errorMessage = error.response.data?.message || "Failed to request password reset";
+        return rejectWithValue(errorMessage);
       } else if (error.request) {
-        // No response received
+        // If the request was made but no response was received
         return rejectWithValue("Network error. Please try again later.");
       } else {
-        // Other errors
-        return rejectWithValue("An unexpected error occurred");
+        // If something happened in setting up the request
+        return rejectWithValue("An unexpected error occurred. Please try again.");
       }
     }
   }
@@ -179,7 +181,7 @@ const authSlice = createSlice({
         state.user = action.payload.user;
         state.token = action.payload.token;
         localStorage.setItem("token", action.payload.token);
-        
+
         localStorage.setItem("user", JSON.stringify(action.payload.user));
       })
       .addCase(loginUser.rejected, (state, action) => {
@@ -191,15 +193,19 @@ const authSlice = createSlice({
       .addCase(requestPasswordReset.pending, (state) => {
         state.passwordReset.isLoading = true;
         state.passwordReset.error = null;
+
+        state.passwordReset.isLinkSent = false;
       })
       .addCase(requestPasswordReset.fulfilled, (state) => {
         state.passwordReset.isLoading = false;
+
         state.passwordReset.isLinkSent = true;
         state.passwordReset.message =
           "If your email is registered, a password reset code has been sent.";
       })
       .addCase(requestPasswordReset.rejected, (state, action) => {
         state.passwordReset.isLoading = false;
+        state.passwordReset.isLinkSent = false;
         state.passwordReset.error = action.payload;
       })
 
