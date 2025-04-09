@@ -7,6 +7,44 @@ import ProfileHeader from "../ProfileHeader/ProfileHeader";
 import leftArrow from "../../assets/images/left.png";
 import "./CompletedTasks.css";
 
+// Component to render a task with properly formatted description
+const TaskCard = ({ task }) => {
+  // State to track whether description should be truncated
+  const [isTruncated, setIsTruncated] = useState(true);
+  
+  // Calculate if description should be truncated
+  const shouldTruncate = task.description && task.description.length > 100;
+  
+  // Toggle truncation on click
+  const toggleTruncation = (e) => {
+    if (shouldTruncate) {
+      e.stopPropagation(); // Prevent event bubbling
+      setIsTruncated(!isTruncated);
+    }
+  };
+  
+  return (
+    <div className="task-card completed" onClick={toggleTruncation}>
+      <span className="task-status-indicator">✓ </span>
+      {task.title || task.name || "Untitled Task"}
+      
+      {task.description && (
+        <div className="task-description">
+          {shouldTruncate && isTruncated 
+            ? `${task.description.substring(0, 100)}...` 
+            : task.description}
+            
+          {shouldTruncate && (
+            <div style={{ fontSize: '14px', marginTop: '5px', color: '#008080' }}>
+              {isTruncated ? 'Tap to show more' : 'Tap to show less'}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
 const CompletedTasks = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
