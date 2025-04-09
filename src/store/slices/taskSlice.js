@@ -137,15 +137,15 @@ export const fetchTasks = createAsyncThunk(
   "tasks/fetchTasks",
   async (params, { rejectWithValue }) => {
     try {
-      const { fromDate, toDate, includeCompleted = false } = params || {};
-      const today = new Date();
-      const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
-      const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+      // const { fromDate, toDate, includeCompleted = false } = params || {};
+      // const today = new Date();
+      // const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+      // const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
 
-      const startDate = fromDate || formatDateForApi(firstDay);
-      const endDate = toDate || formatDateForApi(lastDay);
+      // const startDate = fromDate || formatDateForApi(firstDay);
+      // const endDate = toDate || formatDateForApi(lastDay);
 
-      const url = `/api/tasks/calendar?startDate=${startDate}&endDate=${endDate}&includeCompleted=${includeCompleted}`;
+      const url = `/api/tasks/list`;
 
       const response = await axios.get(url);
       

@@ -57,7 +57,7 @@ const Dashboard = () => {
     }));
   }, [dispatch, location.state?.shouldRefresh]);
 
-  const activeTasks = tasks.filter((task) => !task.completed);
+  const activeTasks = tasks?.filter(task => !task.completed) || [];
 
   const handleCompleteTask = async (taskId) => {
     try {
@@ -70,7 +70,7 @@ const Dashboard = () => {
           completionDate: today 
         })
       ).unwrap();
-      await dispatch(fetchTasks({ includeCompleted: false }));
+      //await dispatch(fetchTasks({ includeCompleted: false }));
       setConfirmationTask(null);
     } catch (error) {
       console.error("Error completing task:", error);

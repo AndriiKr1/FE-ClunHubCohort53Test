@@ -22,12 +22,10 @@ export function mapTaskToBackend(frontendTask) {
 }
 
 // Format date for API requests
-export function formatDateForApi(dateStr) {
-  const date = new Date(dateStr);
+export function formatDateForApi(input) {
+  const date = input instanceof Date ? input : new Date(input);
   if (isNaN(date.getTime())) {
     throw new Error("Invalid date");
   }
-  const formattedDate = date.toISOString().split("T")[0];
-
-  return formattedDate;
+  return date.toISOString().split("T")[0];
 }
