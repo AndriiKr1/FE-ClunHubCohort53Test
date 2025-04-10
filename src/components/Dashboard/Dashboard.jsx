@@ -70,7 +70,7 @@ const Dashboard = () => {
           completionDate: today 
         })
       ).unwrap();
-      //await dispatch(fetchTasks({ includeCompleted: false }));
+      await dispatch(fetchTasks({ includeCompleted: false }));
       setConfirmationTask(null);
     } catch (error) {
       console.error("Error completing task:", error);

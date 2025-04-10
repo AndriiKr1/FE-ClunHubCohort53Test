@@ -28,7 +28,16 @@ const AddTask = () => {
   useEffect(() => {
     if (isEditing && taskToEdit) {
       setTaskName(taskToEdit.name);
-      setDeadline(taskToEdit.deadline);
+      
+     
+      if (taskToEdit.deadline) {
+        // Переконуємось, що формат дати YYYY-MM-DD
+        const dateValue = typeof taskToEdit.deadline === 'string' 
+          ? taskToEdit.deadline.split('T')[0] 
+          : taskToEdit.deadline;
+        setDeadline(dateValue);
+      }
+      
       setDescription(taskToEdit.description || "");
     }
   }, [isEditing, taskToEdit]);
