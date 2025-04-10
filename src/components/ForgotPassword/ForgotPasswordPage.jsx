@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { requestPasswordReset, resetPassword, clearPasswordResetState } from "../../store/slices/authSlice";
+import { requestPasswordReset, resetPassword, clearPasswordResetState, verifyResetCode } from "../../store/slices/authSlice";
 import styles from "./ForgotPasswordPage.module.css";
 import clanHubLogo from "../../assets/images/Logo2.png";
 
@@ -168,26 +168,26 @@ const ForgotPasswordPage = () => {
       }
   
       try {
-        setSuccessMessage(""); 
-        
+        setSuccessMessage("");
         await dispatch(requestPasswordReset(email)).unwrap();
-        
-        // If unwrap() succeeds, it means the request was successful
         setSuccessMessage("Reset code sent! Please check your email.");
         setTimeout(() => {
           setStep("code");
           setSuccessMessage("");
         }, 2000);
-        
       } catch (error) {
-        // Handle specific error scenarios
-        if (error === "User is not registered") {
-          setError("This email is not registered in our system");
-        } else if (error === "Invalid email format") {
-          setError("Please enter a valid email address");
+        // Перевіряємо тип помилки
+        if (error.status === 400) {
+          setError("Please enter a valid email address"); // Помилка валідації формату
+        } else if (error.status === 404 || error.message === "Email not found") {
+          setError("This email is not registered in our system."); // Email не існує
         } else {
-          // Generic error handling
-          setError(error || "Failed to send reset code. Please try again later.");
+          // Для інших помилок (наприклад, 500 або мережевих) не розкриваємо деталей
+          setSuccessMessage("If your email is registered, a password reset code has been sent.");
+          setTimeout(() => {
+            setStep("code");
+            setSuccessMessage("");
+          }, 2000);
         }
       }
     } else if (step === "code") {
@@ -195,7 +195,26 @@ const ForgotPasswordPage = () => {
         setError("Please enter a valid 6-digit code");
         return;
       }
-      setStep("password");
+
+      // Verify the code with the server
+      try {
+        await dispatch(verifyResetCode({ email: email, token: code })).unwrap();
+        
+        // Only proceed to the next step if verification succeeded
+        setStep("password");
+      } catch (error) {
+        // Handle specific error types
+        if (error === "invalid_token") {
+          setError("The verification code you entered is incorrect.");
+        } else if (error === "code_expired") {
+          setIsCodeExpired(true);
+          setError("The verification code has expired. Please request a new code.");
+        } else if (error === "code_not_found") {
+          setError("Invalid verification code. Please check and try again.");
+        } else {
+          setError(error || "Failed to verify code. Please try again.");
+        }
+      }
     } else if (step === "password") {
       const passwordError = validatePassword(newPassword);
       if (passwordError) {
@@ -212,6 +231,7 @@ const ForgotPasswordPage = () => {
             token: code,
             newPassword,
             confirmPassword: repeatPassword,
+            email: email
           })
         ).unwrap();
         
@@ -221,7 +241,7 @@ const ForgotPasswordPage = () => {
         }, 2000);
       } catch (error) {
         // Handle password reset errors
-        setError(error.message || "Failed to reset password");
+        setError(error || "Failed to reset password");
       }
     }
   };
@@ -332,7 +352,9 @@ const ForgotPasswordPage = () => {
               />
             </>
           )}
-          {error && <span className={styles.error}>{error}</span>}
+          {error && <span className={styles.error}>
+  {typeof error === 'object' ? error.message || JSON.stringify(error) : error}
+</span>}
           <button 
             id="submit-btn" 
             type="submit" 

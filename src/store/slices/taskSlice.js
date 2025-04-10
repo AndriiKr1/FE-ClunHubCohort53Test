@@ -93,9 +93,9 @@ export const updateTask = createAsyncThunk(
   async ({ taskId, taskData, email }, { rejectWithValue, dispatch }) => {
     try {
       // Валідація даних
-      if (!taskData.name || taskData.name.length < 10) {
+      if (!taskData.name || taskData.name.length < 1) {
         return rejectWithValue(
-          "The task name must be at least 10 characters long"
+          "The task name must be at least 1 characters long"
         );
       }
 

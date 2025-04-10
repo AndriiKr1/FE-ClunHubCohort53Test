@@ -130,6 +130,38 @@ export const requestPasswordReset = createAsyncThunk(
   }
 );
 
+export const verifyResetCode = createAsyncThunk(
+  "auth/verifyResetCode",
+  async ({ email, token }, { rejectWithValue }) => {
+    try {
+      // Make API call to verify the reset code
+      const response = await axios.post(`/api/auth/verify-reset-code`, {
+        email,
+        token
+      });
+      
+      return response.data;
+    } catch (error) {
+      // Handle different error responses
+      if (error.response) {
+        // Server responded with an error
+        if (error.response.status === 400) {
+          return rejectWithValue("invalid_token");
+        } else if (error.response.status === 404) {
+          return rejectWithValue("code_not_found");
+        } else if (error.response.status === 410) {
+          return rejectWithValue("code_expired");
+        } else {
+          return rejectWithValue(error.response.data?.message || "Server error occurred");
+        }
+      }
+      
+      // Network error or other issue
+      return rejectWithValue("Failed to verify code. Please try again.");
+    }
+  }
+);
+
 export const resetPassword = createAsyncThunk(
   "auth/resetPassword",
   async (data, { rejectWithValue }) => {
@@ -138,6 +170,7 @@ export const resetPassword = createAsyncThunk(
         token: data.token,
         newPassword: data.newPassword,
         confirmPassword: data.confirmPassword,
+        email: data.email
       });
 
       return response.data;
@@ -277,7 +310,20 @@ const authSlice = createSlice({
           state.passwordReset.error =
             action.payload || "Failed to reset password";
         }
-      });
+      })
+      .addCase(verifyResetCode.pending, (state) => {
+        state.passwordReset.isLoading = true;
+        state.passwordReset.error = null;
+      })
+      .addCase(verifyResetCode.fulfilled, (state) => {
+        state.passwordReset.isLoading = false;
+        state.passwordReset.isCodeVerified = true;
+      })
+      .addCase(verifyResetCode.rejected, (state, action) => {
+        state.passwordReset.isLoading = false;
+        state.passwordReset.isCodeVerified = false;
+        state.passwordReset.error = action.payload;
+      })
   },
 });
 export const { logout, clearError, clearPasswordResetState } =
