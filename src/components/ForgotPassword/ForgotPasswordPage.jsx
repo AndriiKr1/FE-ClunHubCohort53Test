@@ -52,7 +52,6 @@ const ForgotPasswordPage = () => {
   }, [step, remainingTime]);
 
   useEffect(() => {
-    
     if (passwordReset.error) {
       if (passwordReset.error === "code_expired") {
         setIsCodeExpired(true);
@@ -63,15 +62,7 @@ const ForgotPasswordPage = () => {
         setError(passwordReset.error);
       }
     }
-      
-    if (passwordReset.isLinkSent && step === "email") {
-      setSuccessMessage("Reset code sent! Please check your email.");
-      setTimeout(() => {
-        setStep("code");
-        setSuccessMessage("");
-      }, 2000);
-    }
-  }, [passwordReset.error, passwordReset.isLinkSent, step]);
+  }, [passwordReset.error]);
 
   useEffect(() => {
     if (step === "code") {
@@ -169,26 +160,18 @@ const ForgotPasswordPage = () => {
   
       try {
         setSuccessMessage("");
+       
         await dispatch(requestPasswordReset(email)).unwrap();
         setSuccessMessage("Reset code sent! Please check your email.");
         setTimeout(() => {
           setStep("code");
           setSuccessMessage("");
         }, 2000);
+
       } catch (error) {
-        // Перевіряємо тип помилки
-        if (error.status === 400) {
-          setError("Please enter a valid email address"); // Помилка валідації формату
-        } else if (error.status === 404 || error.message === "Email not found") {
-          setError("This email is not registered in our system."); // Email не існує
-        } else {
-          // Для інших помилок (наприклад, 500 або мережевих) не розкриваємо деталей
-          setSuccessMessage("If your email is registered, a password reset code has been sent.");
-          setTimeout(() => {
-            setStep("code");
-            setSuccessMessage("");
-          }, 2000);
-        }
+        if (error.response?.status === 404) {
+          setError("This email is not registered in our system.");
+        } 
       }
     } else if (step === "code") {
       if (code.length !== 6) {

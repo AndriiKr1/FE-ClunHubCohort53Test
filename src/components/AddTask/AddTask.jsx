@@ -109,7 +109,7 @@ const AddTask = () => {
 
   const handleOk = () => {
     setShowSuccess(false);
-    navigate("/dashboard", { state: { shouldRefresh: Date.now() } });
+    navigate("/dashboard");
   };
 
   const today = new Date().toISOString().split("T")[0];

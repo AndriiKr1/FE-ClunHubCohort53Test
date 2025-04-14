@@ -49,7 +49,7 @@ export const createTask = createAsyncThunk(
       // Валідація даних
       if (!taskData.name || taskData.name.length < 1) {
         return rejectWithValue(
-          "The task name must be at least 1вч characters long."
+          "The task name must be at least 1 characters long."
         );
       }
 
@@ -138,11 +138,23 @@ export const updateTask = createAsyncThunk(
 // Отримання завдань
 export const fetchTasks = createAsyncThunk(
   "tasks/fetchTasks",
-  async ({ rejectWithValue }) => {
+  async (params, { rejectWithValue }) => {
     try {
-      // const { fromDate, toDate, includeCompleted = false } = params || {};
+      const { fromDate, toDate, includeCompleted = false } = params || {};
 
-      const url = `/api/tasks/list`;
+      // Формируем URL с параметрами, если они предоставлены
+      let url = `/api/tasks/list`;
+      const queryParams = [];
+      
+      if (fromDate) queryParams.push(`fromDate=${fromDate}`);
+      if (toDate) queryParams.push(`toDate=${toDate}`);
+      if (includeCompleted !== undefined) queryParams.push(`includeCompleted=${includeCompleted}`);
+      
+      if (queryParams.length > 0) {
+        url += `?${queryParams.join('&')}`;
+      }
+
+      
 
       const response = await axios.get(url);
 

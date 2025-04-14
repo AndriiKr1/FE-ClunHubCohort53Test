@@ -15,12 +15,12 @@ export const registerUser = createAsyncThunk(
         avatarId: userData.avatar,
       };
       
-      console.log("Formatted request data:", requestData);
+     
       
       const response = await axios.post(`/api/auth/sign-up`, requestData);
       return response.data;
     } catch (error) {
-      console.error("Registration error details:", error.response || error);
+      
       
       // Handle specific error types
       if (error.response) {
@@ -90,42 +90,15 @@ export const requestPasswordReset = createAsyncThunk(
   "auth/requestPasswordReset",
   async (email, { rejectWithValue }) => {
     try {
-      console.log("Requesting password reset for:", email);
-      
-      const response = await axios.post(`/api/auth/forgot-password`, { email });
-      console.log("Password reset response:", response.data);
-      
-      // The API might always return success:true to avoid leaking whether an
-      // email exists in the system (security best practice)
-      if (response.data && response.data.success === false) {
-        return rejectWithValue(response.data.message || "Email not registered");
-      }
-      
-      // Success case - the API should return a message like
-      // "If your email is registered, a password reset code has been sent."
+      const response = await axios.post("/api/auth/forgot-password", { email });
+     
       return response.data;
     } catch (error) {
-      console.error("Password reset error:", error.response || error);
-      
-      if (error.response) {
-        // Server responded with an error
-        if (error.response.status === 404) {
-          // API endpoint not found
-          return rejectWithValue("Service unavailable. Please try again later.");
-        } else if (error.response.data && error.response.data.message) {
-          // Use the server's error message
-          return rejectWithValue(error.response.data.message);
-        } else {
-          // Generic error with status code
-          return rejectWithValue(`Error ${error.response.status}: Failed to send reset code`);
-        }
-      } else if (error.request) {
-        // Request was made but no response received (network issue)
-        return rejectWithValue("Network error. Please check your connection and try again.");
-      } else {
-        // Something else happened while setting up the request
-        return rejectWithValue("Something went wrong. Please try again later.");
-      }
+          return rejectWithValue({
+        status: error.response?.status,
+        message: error.response?.data?.message || error.message,
+        
+      });
     }
   }
 );
